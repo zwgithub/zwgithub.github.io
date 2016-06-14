@@ -1,0 +1,561 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  
+  <meta http-equiv="X-UA-Compatible" content="IE=edge" >
+  <title>iOS 中 native 和 JavaScript 的交互原理以及 WebViewJavascript 源码分析 | Zhenwei</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+  <meta name="description" content="前言
+在 iOS 开发中经常要用到 UIWebView ( iOS8 中可以用 WKWebView，本文章以 UIWebView 为例 ) 来展示一些东西，其中就难免要和网页进行交互。服务端提供 H5 供多个平台使用，我们就不用在 native 中开发了，是不是很棒。Hybrid App 的优势很明显，这就要求我们必须具备 native 和网页交互的技能。学点儿 JavaScript 的知识能帮我">
+<meta property="og:type" content="article">
+<meta property="og:title" content="iOS 中 native 和 JavaScript 的交互原理以及 WebViewJavascript 源码分析">
+<meta property="og:url" content="http://yoursite.com/2016/06/14/iOS-中-native-和-JavaScript-的交互原理以及-WebViewJavascript-源码分析/index.html">
+<meta property="og:site_name" content="Zhenwei">
+<meta property="og:description" content="前言
+在 iOS 开发中经常要用到 UIWebView ( iOS8 中可以用 WKWebView，本文章以 UIWebView 为例 ) 来展示一些东西，其中就难免要和网页进行交互。服务端提供 H5 供多个平台使用，我们就不用在 native 中开发了，是不是很棒。Hybrid App 的优势很明显，这就要求我们必须具备 native 和网页交互的技能。学点儿 JavaScript 的知识能帮我">
+<meta property="og:updated_time" content="2016-06-14T10:13:44.000Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="iOS 中 native 和 JavaScript 的交互原理以及 WebViewJavascript 源码分析">
+<meta name="twitter:description" content="前言
+在 iOS 开发中经常要用到 UIWebView ( iOS8 中可以用 WKWebView，本文章以 UIWebView 为例 ) 来展示一些东西，其中就难免要和网页进行交互。服务端提供 H5 供多个平台使用，我们就不用在 native 中开发了，是不是很棒。Hybrid App 的优势很明显，这就要求我们必须具备 native 和网页交互的技能。学点儿 JavaScript 的知识能帮我">
+  
+    <link rel="alternative" href="/atom.xml" title="Zhenwei" type="application/atom+xml">
+  
+  
+    <link rel="icon" href="/favicon.png">
+  
+  <link rel="stylesheet" href="/css/style.css">
+</head>
+
+<body>
+  <div id="container">
+    <div class="left-col">
+    <div class="overlay"></div>
+<div class="intrude-less">
+	<header id="header" class="inner">
+		<a href="/" class="profilepic">
+			
+			<img lazy-src="https://raw.githubusercontent.com/zwgithub/blog_pic/master/shanwu.jpeg" class="js-avatar">
+			
+		</a>
+
+		<hgroup>
+		  <h1 class="header-author"><a href="/">Zhenwei Cao</a></h1>
+		</hgroup>
+
+		
+		<p class="header-subtitle">Where there is life there is struggle！</p>
+		
+
+		
+			<div class="switch-btn">
+				<div class="icon">
+					<div class="icon-ctn">
+						<div class="icon-wrap icon-house" data-idx="0">
+							<div class="birdhouse"></div>
+							<div class="birdhouse_holes"></div>
+						</div>
+						<div class="icon-wrap icon-ribbon hide" data-idx="1">
+							<div class="ribbon"></div>
+						</div>
+						
+						
+						<div class="icon-wrap icon-me hide" data-idx="3">
+							<div class="user"></div>
+							<div class="shoulder"></div>
+						</div>
+						
+					</div>
+					
+				</div>
+				<div class="tips-box hide">
+					<div class="tips-arrow"></div>
+					<ul class="tips-inner">
+						<li>菜单</li>
+						<li>标签</li>
+						
+						
+						<li>关于我</li>
+						
+					</ul>
+				</div>
+			</div>
+		
+
+		<div class="switch-area">
+			<div class="switch-wrap">
+				<section class="switch-part switch-part1">
+					<nav class="header-menu">
+						<ul>
+						
+							<li><a href="/">主页</a></li>
+				        
+							<li><a href="/archives">所有文章</a></li>
+				        
+						</ul>
+					</nav>
+					<nav class="header-nav">
+						<div class="social">
+							
+								<a class="github" target="_blank" href="#" title="github">github</a>
+					        
+								<a class="weibo" target="_blank" href="#" title="weibo">weibo</a>
+					        
+								<a class="rss" target="_blank" href="#" title="rss">rss</a>
+					        
+								<a class="zhihu" target="_blank" href="#" title="zhihu">zhihu</a>
+					        
+						</div>
+					</nav>
+				</section>
+				
+				
+				<section class="switch-part switch-part2">
+					<div class="widget tagcloud" id="js-tagcloud">
+						
+					</div>
+				</section>
+				
+				
+				
+
+				
+				
+				<section class="switch-part switch-part3">
+				
+					<div id="js-aboutme">我是谁，我从哪里来，我到哪里去？我就是我，是颜色不一样的吃货…</div>
+				</section>
+				
+			</div>
+		</div>
+	</header>				
+</div>
+
+    </div>
+    <div class="mid-col">
+      <nav id="mobile-nav">
+  	<div class="overlay">
+  		<div class="slider-trigger"></div>
+  		<h1 class="header-author js-mobile-header hide">Zhenwei Cao</h1>
+  	</div>
+	<div class="intrude-less">
+		<header id="header" class="inner">
+			<div class="profilepic">
+			
+				<img lazy-src="https://raw.githubusercontent.com/zwgithub/blog_pic/master/shanwu.jpeg" class="js-avatar">
+			
+			</div>
+			<hgroup>
+			  <h1 class="header-author">Zhenwei Cao</h1>
+			</hgroup>
+			
+			<p class="header-subtitle">Where there is life there is struggle！</p>
+			
+			<nav class="header-menu">
+				<ul>
+				
+					<li><a href="/">主页</a></li>
+		        
+					<li><a href="/archives">所有文章</a></li>
+		        
+		        <div class="clearfix"></div>
+				</ul>
+			</nav>
+			<nav class="header-nav">
+				<div class="social">
+					
+						<a class="github" target="_blank" href="#" title="github">github</a>
+			        
+						<a class="weibo" target="_blank" href="#" title="weibo">weibo</a>
+			        
+						<a class="rss" target="_blank" href="#" title="rss">rss</a>
+			        
+						<a class="zhihu" target="_blank" href="#" title="zhihu">zhihu</a>
+			        
+				</div>
+			</nav>
+		</header>				
+	</div>
+</nav>
+
+      <div class="body-wrap"><article id="[layout]-iOS-中-native-和-JavaScript-的交互原理以及-WebViewJavascript-源码分析" class="article article-type-[layout]" itemscope itemprop="blogPost">
+  
+    <div class="article-meta">
+      <a href="/2016/06/14/iOS-中-native-和-JavaScript-的交互原理以及-WebViewJavascript-源码分析/" class="article-date">
+  	<time datetime="2016-06-14T10:12:53.000Z" itemprop="datePublished">2016-06-14</time>
+</a>
+    </div>
+  
+  <div class="article-inner">
+    
+      <input type="hidden" class="isFancy" />
+    
+    
+      <header class="article-header">
+        
+  
+    <h1 class="article-title" itemprop="name">
+      iOS 中 native 和 JavaScript 的交互原理以及 WebViewJavascript 源码分析
+    </h1>
+  
+
+      </header>
+      
+      <div class="article-info article-info-post">
+        
+        
+
+        <div class="clearfix"></div>
+      </div>
+      
+    
+    <div class="article-entry" itemprop="articleBody">
+      
+        <p>前言</p>
+<p>在 iOS 开发中经常要用到 UIWebView ( iOS8 中可以用 WKWebView，本文章以 UIWebView 为例 ) 来展示一些东西，其中就难免要和网页进行交互。服务端提供 H5 供多个平台使用，我们就不用在 native 中开发了，是不是很棒。Hybrid App 的优势很明显，这就要求我们必须具备 native 和网页交互的技能。学点儿 JavaScript 的知识能帮我们更好的理解交互的原理。本文主要来介绍 UIWebView 和 JavaScript 的交互原理以及 WebViewJavascriptBridge (<a href="https://github.com/marcuswestin/WebViewJavascriptBridge" target="_blank" rel="external">github 地址</a>) 源码分析。</p>
+<a id="more"></a>
+<h3 id="1-UIWebView-和-JavaScript-的交互原理"><a href="#1-UIWebView-和-JavaScript-的交互原理" class="headerlink" title="1 UIWebView 和 JavaScript 的交互原理"></a>1 UIWebView 和 JavaScript 的交互原理</h3><p>理解这个原理之前必须先明确以下两点：</p>
+<ul>
+<li><p>JavaScript 能直接调用 native 方法吗？不可以。</p>
+</li>
+<li><p>native 能直接调用 JavaScript 代码吗？可以，可以通过以下方式来调用：</p>
+<pre><code>[webView stringByEvaluatingJavaScriptFromString:javascriptCommand]；
+</code></pre></li>
+</ul>
+<p>JavaScript 不能直接调用 native 的方法，但是可以间接的通过一些方法来实现。可以利用 UIWebView 的 <code>webView: shouldStartLoadWithRequest: navigationType:</code> 代理方法来做。 WKWebView 中可以通过 <code>webView: decidePolicyForNavigationAction: decisionHandler:</code> 代理方法来做（本文以 UIWebView 为例，WKWebView 与 JavaScript 交互的原理同 UIWebView 一样，后面不会赘述。以下用 webView 来代指 UIWebView 和 WKWebView ）。webView 发起的网络请求都会走上面的代理方法，那么就可以在代理里拦截，如果返回的是我们自己定义的 URL ，就不在加载网页，而是来处理一些我们想让它做的事情，从而实现 native 和 JavaScript 的交互。</p>
+<h3 id="2-WebViewJavascriptBridge-源码分析"><a href="#2-WebViewJavascriptBridge-源码分析" class="headerlink" title="2 WebViewJavascriptBridge 源码分析"></a>2 WebViewJavascriptBridge 源码分析</h3><p>WebViewJavascriptBridge 是封装好的 native 和 JavaScript 交互的组件。下面主要是对它源码的一些分析，以及一些简单的 JavaScript 知识（对只会 Objective-C 程序猿理解 WebViewJavascriptBridge 很有帮助哦）。上面分析的原理是利用 webView 的代理来拦截 URL 从而实现交互。那么 webView 的代理方法 <code>webView: shouldStartLoadWithRequest: navigationType</code> 什么时候会被调用呢？给出的回答是这样的： <code>Sent before a web view begins loading a frame</code> 。如果代理方法只调用一次的话，没办法对其中的 URL 拦截判断（这里指的是我们自定义的 URL），所以就必须想办法在 H5 里做处理来触发 webView 的代理事件。有很多办法能解决这个问题，比如以下两种：</p>
+<pre><code>1. 创建 iframe 标签
+    WebViewJavascriptBridge 中就是用的这种方法。
+2. 设置 window 的 location
+    window.location = &quot;/www/phpStudy/JS/helloJS.html&quot;;
+</code></pre><p>本文以尽可能按照代码的执行顺序来分析 WebViewJavascriptBridge 源代码。那现在正式开始，native 创建好 webView 后，来 load ExampleApp.html。先来看看 ExampleApp.html，其中主要的是 script 标签里面的代码，代码如下：</p>
+<pre><code>&lt;script&gt;
+    //alert(&quot;在 javascript 中！&quot;);
+    window.onerror = function(err) {
+        log(&apos;window.onerror: &apos; + err)
+    }
+
+    function setupWebViewJavascriptBridge(callback) {
+        if (window.WebViewJavascriptBridge) {
+             //alert(&quot;0&quot;);
+            return callback(WebViewJavascriptBridge);
+        }
+        if (window.WVJBCallbacks) {
+            //alert(&quot;1&quot;);
+            return window.WVJBCallbacks.push(callback);
+        }
+        window.WVJBCallbacks = [callback];
+        var WVJBIframe = document.createElement(&apos;iframe&apos;);
+        WVJBIframe.style.display = &apos;none&apos;;
+        WVJBIframe.src = &apos;wvjbscheme://__BRIDGE_LOADED__&apos;;
+        document.documentElement.appendChild(WVJBIframe);
+        setTimeout(function(){
+         document.documentElement.removeChild(WVJBIframe) 
+         }, 0)
+    }
+
+    setupWebViewJavascriptBridge(function(bridge) {
+        var uniqueId = 1
+        function log(message, data) {
+            var log = document.getElementById(&apos;log&apos;)
+            var el = document.createElement(&apos;div&apos;)
+            el.className = &apos;logLine&apos;
+            el.innerHTML = uniqueId++ + &apos;. &apos; + message + &apos;:&lt;br/&gt;&apos; + JSON.stringify(data)
+            if (log.children.length) { log.insertBefore(el, log.children[0]) }
+            else { log.appendChild(el) }
+        }
+
+        //alert(&quot;在exampleApp setupWebViewJavascriptBridge 中&quot;);
+        bridge.registerHandler(&apos;testJavascriptHandler&apos;, function(data, responseCallback) {
+            log(&apos;ObjC called testJavascriptHandler with&apos;, data)
+            var responseData = { &apos;oc调用js后，js给oc的回调&apos;:&apos;hello&apos; }
+            log(&apos;JS responding with&apos;, responseData)
+            responseCallback(responseData)
+        })
+
+        document.body.appendChild(document.createElement(&apos;br&apos;))
+
+        var callbackButton = document.getElementById(&apos;buttons&apos;).appendChild(document.createElement(&apos;button&apos;))
+        callbackButton.innerHTML = &apos;测试 JS 调用 OC 函数&apos;
+        callbackButton.onclick = function(e) {
+            e.preventDefault()
+            log(&apos;JS calling handler &quot;testObjcCallback&quot;&apos;)
+            bridge.callHandler(&apos;testObjcCallback&apos;, {&apos;foo&apos;: &apos;bar&apos;}, function(response) {
+                log(&apos;JS 得到的回应数据：&apos;, response)
+            })
+        }
+    })
+&lt;/script&gt;
+</code></pre><p>对 Objective-C 程序猿来说猛的一眼看不懂这是什么，其实就是一个简单的 JavaScript 函数调用，只不过是把另一个函数当做参数传给了 setupWebViewJavascriptBridge 函数。简化后如下：</p>
+<pre><code>function setupWebViewJavascriptBridge(callback) {}
+
+setupWebViewJavascriptBridge(function(bridge) {})
+</code></pre><p>上面的 <code>setupWebViewJavascriptBridge</code> 函数中对 <code>window.WebViewJavascriptBridge</code> 和 window.WVJBCallbacks 做判断，第一次请求 H5 这两个属性都为空，根本就不回执行 if 里面的语句，可以像上面代码中注释的那样，用 alert 来证实。callback 被加到了 WVJBCallbacks 数组里，这里先记住，后面会用，这里提个醒留个印象。接着函数中还创建了一个隐藏的 iframe 标签，并设置它的 src 属性为 <code>wvjbscheme://__BRIDGE_LOADED__</code>。这样我们才能在 webView 的代理方法中对 URL 做判断，并做进一步的处理。 来看一下 wevView 的代理方法：</p>
+<pre><code>- (BOOL)webView:(UIWebView *)webView shouldStartLoadWithRequest:(NSURLRequest *)request navigationType:(UIWebViewNavigationType)navigationType {
+if (webView != _webView) {
+    return YES;
+}
+NSURL *url = [request URL];
+__strong WVJB_WEBVIEW_DELEGATE_TYPE* strongDelegate = _webViewDelegate;
+if ([_base isCorrectProcotocolScheme:url]) {
+    if ([_base isBridgeLoadedURL:url]) {
+        //拦截到 wvjbscheme://__BRIDGE_LOADED__
+        [_base injectJavascriptFile];
+    } else if ([_base isQueueMessageURL:url]) {
+        //拦截到 wvjbscheme://__WVJB_QUEUE_MESSAGE__
+        NSString *messageQueueString = [self _evaluateJavascript:[_base webViewJavascriptFetchQueyCommand]];
+        [_base flushMessageQueue:messageQueueString];
+    } else {
+        [_base logUnkownMessage:url];
+    }
+    return NO;
+} else if (strongDelegate &amp;&amp; [strongDelegate respondsToSelector:@selector(webView:shouldStartLoadWithRequest:navigationType:)]) {
+    return [strongDelegate webView:webView shouldStartLoadWithRequest:request navigationType:navigationType];
+} else {
+    return YES;
+}
+</code></pre><p>}</p>
+<p>在这里面拦截到是我们定义的 <code>wvjbscheme</code> 后就调用相应的逻辑处理，否则的话就不处理。在这里拦截到 <code>wvjbscheme://__BRIDGE_LOADED__</code>，执行了 WebViewJavascriptBridge_js 里的 JavaScript 代码。来看看 WebViewJavascriptBridge_js 里的代码都干了点儿什么，先挑出现在能用上的，具体的用的时候再说。看看下面的代码片段：</p>
+<pre><code>messagingIframe = document.createElement(&apos;iframe&apos;);
+messagingIframe.style.display = &apos;none&apos;;
+messagingIframe.src = CUSTOM_PROTOCOL_SCHEME + &apos;://&apos; + QUEUE_HAS_MESSAGE;
+document.documentElement.appendChild(messagingIframe);        
+
+setTimeout(_callWVJBCallbacks, 0);
+function _callWVJBCallbacks() {
+    var callbacks = window.WVJBCallbacks;
+
+    delete window.WVJBCallbacks;
+    for (var i=0; i&lt;callbacks.length; i++) {
+        callbacks[i](WebViewJavascriptBridge);
+    }
+}
+</code></pre><p>一眼就能看到其中又创建了个 iframe 标签，把 src 设置成了 <code>wvjbscheme://__WVJB_QUEUE_MESSAGE__</code>，这样的话就能在 webView 的代理方法中拦截了。来说一下 setTimeout 的作用：setTimeout() 方法用于在指定的毫秒数后调用函数或计算表达式（<a href="http://www.w3school.com.cn/jsref/met_win_settimeout.asp" target="_blank" rel="external">setTimeout 函数介绍</a>）。接着调用了 _callWVJBCallbacks 函数，在这个函数里面取出了上面让暂时记住的 window.WVJBCallbacks (在 ExampleApp.html 里把 callback 放入进 WVJBCallbacks 里)，取出里面所有的方法（其实现在就一个 callback 方法）并且执行。让我们来跳到 ExampleApp.html 里面，看看 callback （就是setupWebViewJavascriptBridge 调用处传进来的匿名函数）里都做了什么。log 方法用来打印信息。接着调用了 bridge 的 registerHandler 方法（这个主要是供 native 端来调用的）。创建了一个 callbackButton 并绑定它的 onclick 事件。先来看看 registerHandler 方法都干了什么，跳到 WebViewJavascriptBridge_JS.m 里找到的 registerHandler 如下：</p>
+<pre><code>function registerHandler(handlerName, handler) {
+    messageHandlers[handlerName] = handler;
+}
+</code></pre><p>这里是把 registerHandler 里传过来的参数放到了 messageHandlers 数组里，以后 native 调用 JavaScript 方法的时候就会来这里取。</p>
+<pre><code>//Objective-C 程序猿的加油站：JavaScript 拥有动态类型
+
+我们申明 messageHandlers 时是这样申明的 var messageHandlers = {}; 可是在用的时候就把它当数组用了，对 Objective-C 程序猿来说是很奇怪的。其实JavaScript 拥有动态类型。这意味着相同的变量可用作不同的类型。
+</code></pre><h5 id="native-调用-JavaScript-方法"><a href="#native-调用-JavaScript-方法" class="headerlink" title="native 调用 JavaScript    方法"></a>native 调用 JavaScript    方法</h5><p>native 调用 JavaScript 方法是这样的：</p>
+<pre><code>[_bridge callHandler:@&quot;testJavascriptHandler&quot; data:data responseCallback:^(id response) {
+    NSLog(@&quot;testJavascriptHandler responded: %@&quot;, response);
+}]    
+</code></pre><p>通过上面的函数，一路跟下去，发现是把调用的 JavaScript 的方法名，参数和回调拼装好后在本地执行了 <code>_handleMessageFromObjC</code> 方法，其中 <code>_handleMessageFromObjC</code> 的参数是上面拼装好的字典。来看看 <code>_handleMessageFromObjC</code> 里做了什么。</p>
+<pre><code>function _handleMessageFromObjC(messageJSON) {
+    _dispatchMessageFromObjC(messageJSON);
+}
+
+function _dispatchMessageFromObjC(messageJSON) {
+    //messageJSON 里面包含 data  callbackId  handlerName
+    setTimeout(function _timeoutDispatchMessageFromObjC() {
+        //使用 JSON.parse 将 JSON 字符串转换为对象
+        var message = JSON.parse(messageJSON);
+        var messageHandler;
+        var responseCallback;
+
+        if (message.responseId) {
+            responseCallback = responseCallbacks[message.responseId];
+            if (!responseCallback) {
+                return;
+            }
+            responseCallback(message.responseData);
+            delete responseCallbacks[message.responseId];
+        } else {
+            if (message.callbackId) {
+                var callbackResponseId = message.callbackId;
+                responseCallback = function(responseData) {
+                    _doSend({ responseId:callbackResponseId, responseData:responseData });
+                };
+            }
+            var handler = messageHandlers[message.handlerName];
+            try {
+                handler(message.data, responseCallback);
+            } catch(exception) {
+                console.log(&quot;WebViewJavascriptBridge: WARNING: javascript handler threw.&quot;, message, exception);
+            }
+            if (!handler) {
+                console.log(&quot;WebViewJavascriptBridge: WARNING: no handler for message from ObjC:&quot;, message);
+            }
+        }
+    });
+}
+</code></pre><p>在 <code>_handleMessageFromObjC</code> 里面又调用了 <code>_dispatchMessageFromObjC</code>。在这里面又发现了 setTimeout，和上面提到的一样，它会执行 <code>_timeoutDispatchMessageFromObjC</code> 方法。该函数里首先对 message.responseId 做了判断，我们知道它肯定是空的，因为传过来的参数只有 data ,callbackId 和 handlerName。在 else 里面取出来 callbackId 赋值给了 callbackResponseId。从 messageHandlers 中取出 handlerName 给了 handler，这里的 handler 就是 JavaScript 注册到这里的方法。执行 handler 并把回调给 native。执行回调的过程中 使用了 _doSend 函数，我们来看一下：</p>
+<pre><code>function _doSend(message, responseCallback) {
+    //mesage 包含responseId,responseData
+    //responseCallback为空
+
+    if (responseCallback) {
+        var callbackId = &apos;cb_&apos;+(uniqueId++)+&apos;_&apos;+new Date().getTime();
+        responseCallbacks[callbackId] = responseCallback;
+        message[&apos;callbackId&apos;] = callbackId;
+    }
+
+    sendMessageQueue.push(message);
+    messagingIframe.src = CUSTOM_PROTOCOL_SCHEME + &apos;://&apos; + QUEUE_HAS_MESSAGE;
+}
+</code></pre><p>此时的 responseCallback 为空，不进 if 里面。然后把 message 放到了 sendMessageQueue 数组里，并把 messagingIframe.src 的设置成了 <code>wvjbscheme://__WVJB_QUEUE_MESSAGE__</code>，就又会执行 webView 的代理方法，在代理方法里判断 URL 为 <code>wvjbscheme://__WVJB_QUEUE_MESSAGE__</code> 的话就会去 通过 _fetchQueue 来取 sendMessageQueue 的数据，并且回调 native 方法。至此，native 调用 JavaScript 注册的方法结束。</p>
+<pre><code>//Objective-C 程序猿的加油站：stringify()
+
+在上面的 _fetchQueue 中用到了 stringify()，下面说说 stringify() 是干什么用的
+stringify()用于从一个对象解析出字符串，例如：
+var a = {a:1,b:2}；
+执行JSON.stringify(a)后的结果为：
+&quot;{&quot;a&quot;:1,&quot;b&quot;:2}&quot;
+</code></pre><h5 id="JavaScript-调用-native-方法"><a href="#JavaScript-调用-native-方法" class="headerlink" title="JavaScript 调用 native     方法"></a>JavaScript 调用 native     方法</h5><p>native 调用的 JavaScript 的方法是在 JavaScript 里提前注册好的。同理，JavaScript 想调用 native 的方法，native 必须也要先注册。</p>
+<pre><code>//在 ExampleUIWebViewController.m 中
+[_bridge registerHandler:@&quot;testObjcCallback&quot; handler:^(id data, WVJBResponseCallback responseCallback) {
+    NSLog(@&quot;testObjcCallback called: %@&quot;, data);
+    responseCallback(@{ @&quot;name&quot;:@&quot;OC回调给js的参数&quot; });
+}];
+
+//在 WebViewJavascriptBridge.m 中
+- (void)registerHandler:(NSString *)handlerName handler:(WVJBHandler)handler {
+    _base.messageHandlers[handlerName] = [handler copy];
+}
+</code></pre><p>在代码层面来看，native 的注册其实就是把 native 中需要被调用的名字和回调放到了 messageHandlers 的字典中。那我们来看看调用 native 方法的具体流程。<br>在点击 webView 上的按钮（在 ExampleApp.html 里面创建的 callbackButton）后，调用了 callHandler 方法，传递的参数为要调用的 native 的方法名，参数和回调。来看看 callHandler 里有什么。</p>
+<pre><code>function callHandler(handlerName, data, responseCallback) {
+    if (arguments.length == 2 &amp;&amp; typeof data == &apos;function&apos;) {
+        responseCallback = data;
+        data = null;
+    }
+    _doSend({ handlerName:handlerName, data:data }, responseCallback);
+}
+</code></pre><p>这里做了容错判断（在下面的 Objective-C 程序猿加油站中有说明）后，和 native 调用 JavaScript 一样，都是调用了 _doSend 方法。在里面为 responseCallback 生成了 唯一的 callbackId 并放到 message 里，接下来的流程和 native 调用 JavaScript 大同小异，这里不再赘述。</p>
+<pre><code>//Objective-C 程序猿的加油站：arguments
+
+在 JavaScript 中 arguments 对象是比较特别的一个对象，实际上是当前函数的一个内置属性，它的长度是由实参个数而不是形参个数决定的。那么就很容易理解了，上面的是一个冗错处理，也就是说在调用 callHandler 的时候可以不传调用 native 方法中的参数，只传递调用 nativie 方法中的方法名字和回调方法即可。
+</code></pre><h3 id="参考文章或链接"><a href="#参考文章或链接" class="headerlink" title="参考文章或链接"></a>参考文章或链接</h3><p><a href="http://www.w3school.com.cn/jsref/met_win_settimeout.asp" target="_blank" rel="external">setTimeout 函数介绍</a></p>
+<p><a href="http://w3school.com.cn/json/index.asp" target="_blank" rel="external">JSON 教程</a></p>
+<p><a href="https://github.com/marcuswestin/WebViewJavascriptBridge" target="_blank" rel="external">WebViewJavascript github 地址</a></p>
+
+      
+    </div>
+    
+  </div>
+  
+    
+<nav id="article-nav">
+  
+  
+    <a href="/2016/06/14/Objective-C-中的-Blocks-原理探究/" id="article-nav-older" class="article-nav-link-wrap">
+      <div class="article-nav-title">Objective-C 中的 Blocks 原理探究</div>
+      <strong class="article-nav-caption">></strong>
+    </a>
+  
+</nav>
+
+  
+</article>
+
+
+<div class="share_jia">
+	<!-- JiaThis Button BEGIN -->
+	<div class="jiathis_style">
+		<span class="jiathis_txt">分享到: &nbsp; </span>
+		<a class="jiathis_button_facebook"></a> 
+    <a class="jiathis_button_twitter"></a>
+    <a class="jiathis_button_plus"></a> 
+    <a class="jiathis_button_tsina"></a>
+		<a class="jiathis_button_cqq"></a>
+		<a class="jiathis_button_douban"></a>
+		<a class="jiathis_button_weixin"></a>
+		<a class="jiathis_button_tumblr"></a>
+    <a href="http://www.jiathis.com/share" class="jiathis jiathis_txt jtico jtico_jiathis" target="_blank"></a>
+	</div>
+	<script type="text/javascript" src="http://v3.jiathis.com/code/jia.js?uid=1405949716054953" charset="utf-8"></script>
+	<!-- JiaThis Button END -->
+</div>
+
+
+
+
+
+
+<div class="duoshuo">
+	<!-- 多说评论框 start -->
+	<div class="ds-thread" data-thread-key="iOS-中-native-和-JavaScript-的交互原理以及-WebViewJavascript-源码分析" data-title="iOS 中 native 和 JavaScript 的交互原理以及 WebViewJavascript 源码分析" data-url="http://yoursite.com/2016/06/14/iOS-中-native-和-JavaScript-的交互原理以及-WebViewJavascript-源码分析/"></div>
+	<!-- 多说评论框 end -->
+	<!-- 多说公共JS代码 start (一个网页只需插入一次) -->
+	<script type="text/javascript">
+	var duoshuoQuery = {short_name:"true"};
+	(function() {
+		var ds = document.createElement('script');
+		ds.type = 'text/javascript';ds.async = true;
+		ds.src = (document.location.protocol == 'https:' ? 'https:' : 'http:') + '//static.duoshuo.com/embed.js';
+		ds.charset = 'UTF-8';
+		(document.getElementsByTagName('head')[0] 
+		 || document.getElementsByTagName('body')[0]).appendChild(ds);
+	})();
+	</script>
+	<!-- 多说公共JS代码 end -->
+</div>
+
+
+
+
+</div>
+      <footer id="footer">
+  <div class="outer">
+    <div id="footer-info">
+    	<div class="footer-left">
+    		&copy; 2016 Zhenwei Cao
+    	</div>
+      	<div class="footer-right">
+      		<a href="http://hexo.io/" target="_blank">Hexo</a>  Theme <a href="https://github.com/litten/hexo-theme-yilia" target="_blank">Yilia</a> by Litten
+      	</div>
+    </div>
+  </div>
+</footer>
+    </div>
+    
+  <link rel="stylesheet" href="/fancybox/jquery.fancybox.css">
+
+
+<script>
+	var yiliaConfig = {
+		fancybox: true,
+		mathjax: true,
+		animate: true,
+		isHome: false,
+		isPost: true,
+		isArchive: false,
+		isTag: false,
+		isCategory: false,
+		open_in_new: true
+	}
+</script>
+<script src="http://7.url.cn/edu/jslib/comb/require-2.1.6,jquery-1.9.1.min.js"></script>
+<script src="/js/main.js"></script>
+
+
+
+
+
+
+<script type="text/x-mathjax-config">
+MathJax.Hub.Config({
+    tex2jax: {
+        inlineMath: [ ['$','$'], ["\\(","\\)"]  ],
+        processEscapes: true,
+        skipTags: ['script', 'noscript', 'style', 'textarea', 'pre', 'code']
+    }
+});
+
+MathJax.Hub.Queue(function() {
+    var all = MathJax.Hub.getAllJax(), i;
+    for(i=0; i < all.length; i += 1) {
+        all[i].SourceElement().parentNode.className += ' has-jax';                 
+    }       
+});
+</script>
+
+<script type="text/javascript" src="http://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML">
+</script>
+
+
+  </div>
+</body>
+</html>

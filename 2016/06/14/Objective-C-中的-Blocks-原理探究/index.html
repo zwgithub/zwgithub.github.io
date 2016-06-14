@@ -1,0 +1,652 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  
+  <meta http-equiv="X-UA-Compatible" content="IE=edge" >
+  <title>Objective-C 中的 Blocks 原理探究 | Zhenwei</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+  <meta name="description" content="前言
+Blocks 是 OS X v10.6 和 iOS 4.0 引入的新特性。觉的自己对 Blocks 掌握的还不错的话，那就来试着做做这五个测试题 。怎么样，全做对了吗？没全做对的话就静下心来，好好的总结一下吧。
+本文章的目录结构：
+1 Blocks 基础知识    
+    1.1 Blocks 是什么
+    1.2 Block 变量
+    1.3 __block 变量
+2 Block">
+<meta property="og:type" content="article">
+<meta property="og:title" content="Objective-C 中的 Blocks 原理探究">
+<meta property="og:url" content="http://yoursite.com/2016/06/14/Objective-C-中的-Blocks-原理探究/index.html">
+<meta property="og:site_name" content="Zhenwei">
+<meta property="og:description" content="前言
+Blocks 是 OS X v10.6 和 iOS 4.0 引入的新特性。觉的自己对 Blocks 掌握的还不错的话，那就来试着做做这五个测试题 。怎么样，全做对了吗？没全做对的话就静下心来，好好的总结一下吧。
+本文章的目录结构：
+1 Blocks 基础知识    
+    1.1 Blocks 是什么
+    1.2 Block 变量
+    1.3 __block 变量
+2 Block">
+<meta property="og:image" content="https://raw.githubusercontent.com/zwgithub/blog_pic/master/block_error.jpg">
+<meta property="og:image" content="https://raw.githubusercontent.com/zwgithub/blog_pic/master/block_retain_cycle1.jpg">
+<meta property="og:image" content="https://raw.githubusercontent.com/zwgithub/blog_pic/master/block0_test.jpg">
+<meta property="og:image" content="https://raw.githubusercontent.com/zwgithub/blog_pic/master/bloc0_cpp.jpg">
+<meta property="og:image" content="https://raw.githubusercontent.com/zwgithub/blog_pic/master/block1_test.jpg">
+<meta property="og:image" content="https://raw.githubusercontent.com/zwgithub/blog_pic/master/block1_cpp.jpg">
+<meta property="og:image" content="https://raw.githubusercontent.com/zwgithub/blog_pic/master/block2_test.jpg">
+<meta property="og:image" content="https://raw.githubusercontent.com/zwgithub/blog_pic/master/block_error.jpg">
+<meta property="og:image" content="https://raw.githubusercontent.com/zwgithub/blog_pic/master/block3_test.jpg">
+<meta property="og:image" content="https://raw.githubusercontent.com/zwgithub/blog_pic/master/block3_cpp.jpg">
+<meta property="og:image" content="https://raw.githubusercontent.com/zwgithub/blog_pic/master/block4_test.jpg">
+<meta property="og:image" content="https://raw.githubusercontent.com/zwgithub/blog_pic/master/block4_cpp.jpg">
+<meta property="og:updated_time" content="2016-06-14T10:12:20.000Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="Objective-C 中的 Blocks 原理探究">
+<meta name="twitter:description" content="前言
+Blocks 是 OS X v10.6 和 iOS 4.0 引入的新特性。觉的自己对 Blocks 掌握的还不错的话，那就来试着做做这五个测试题 。怎么样，全做对了吗？没全做对的话就静下心来，好好的总结一下吧。
+本文章的目录结构：
+1 Blocks 基础知识    
+    1.1 Blocks 是什么
+    1.2 Block 变量
+    1.3 __block 变量
+2 Block">
+<meta name="twitter:image" content="https://raw.githubusercontent.com/zwgithub/blog_pic/master/block_error.jpg">
+  
+    <link rel="alternative" href="/atom.xml" title="Zhenwei" type="application/atom+xml">
+  
+  
+    <link rel="icon" href="/favicon.png">
+  
+  <link rel="stylesheet" href="/css/style.css">
+</head>
+
+<body>
+  <div id="container">
+    <div class="left-col">
+    <div class="overlay"></div>
+<div class="intrude-less">
+	<header id="header" class="inner">
+		<a href="/" class="profilepic">
+			
+			<img lazy-src="https://raw.githubusercontent.com/zwgithub/blog_pic/master/shanwu.jpeg" class="js-avatar">
+			
+		</a>
+
+		<hgroup>
+		  <h1 class="header-author"><a href="/">Zhenwei Cao</a></h1>
+		</hgroup>
+
+		
+		<p class="header-subtitle">Where there is life there is struggle！</p>
+		
+
+		
+			<div class="switch-btn">
+				<div class="icon">
+					<div class="icon-ctn">
+						<div class="icon-wrap icon-house" data-idx="0">
+							<div class="birdhouse"></div>
+							<div class="birdhouse_holes"></div>
+						</div>
+						<div class="icon-wrap icon-ribbon hide" data-idx="1">
+							<div class="ribbon"></div>
+						</div>
+						
+						
+						<div class="icon-wrap icon-me hide" data-idx="3">
+							<div class="user"></div>
+							<div class="shoulder"></div>
+						</div>
+						
+					</div>
+					
+				</div>
+				<div class="tips-box hide">
+					<div class="tips-arrow"></div>
+					<ul class="tips-inner">
+						<li>菜单</li>
+						<li>标签</li>
+						
+						
+						<li>关于我</li>
+						
+					</ul>
+				</div>
+			</div>
+		
+
+		<div class="switch-area">
+			<div class="switch-wrap">
+				<section class="switch-part switch-part1">
+					<nav class="header-menu">
+						<ul>
+						
+							<li><a href="/">主页</a></li>
+				        
+							<li><a href="/archives">所有文章</a></li>
+				        
+						</ul>
+					</nav>
+					<nav class="header-nav">
+						<div class="social">
+							
+								<a class="github" target="_blank" href="#" title="github">github</a>
+					        
+								<a class="weibo" target="_blank" href="#" title="weibo">weibo</a>
+					        
+								<a class="rss" target="_blank" href="#" title="rss">rss</a>
+					        
+								<a class="zhihu" target="_blank" href="#" title="zhihu">zhihu</a>
+					        
+						</div>
+					</nav>
+				</section>
+				
+				
+				<section class="switch-part switch-part2">
+					<div class="widget tagcloud" id="js-tagcloud">
+						
+					</div>
+				</section>
+				
+				
+				
+
+				
+				
+				<section class="switch-part switch-part3">
+				
+					<div id="js-aboutme">我是谁，我从哪里来，我到哪里去？我就是我，是颜色不一样的吃货…</div>
+				</section>
+				
+			</div>
+		</div>
+	</header>				
+</div>
+
+    </div>
+    <div class="mid-col">
+      <nav id="mobile-nav">
+  	<div class="overlay">
+  		<div class="slider-trigger"></div>
+  		<h1 class="header-author js-mobile-header hide">Zhenwei Cao</h1>
+  	</div>
+	<div class="intrude-less">
+		<header id="header" class="inner">
+			<div class="profilepic">
+			
+				<img lazy-src="https://raw.githubusercontent.com/zwgithub/blog_pic/master/shanwu.jpeg" class="js-avatar">
+			
+			</div>
+			<hgroup>
+			  <h1 class="header-author">Zhenwei Cao</h1>
+			</hgroup>
+			
+			<p class="header-subtitle">Where there is life there is struggle！</p>
+			
+			<nav class="header-menu">
+				<ul>
+				
+					<li><a href="/">主页</a></li>
+		        
+					<li><a href="/archives">所有文章</a></li>
+		        
+		        <div class="clearfix"></div>
+				</ul>
+			</nav>
+			<nav class="header-nav">
+				<div class="social">
+					
+						<a class="github" target="_blank" href="#" title="github">github</a>
+			        
+						<a class="weibo" target="_blank" href="#" title="weibo">weibo</a>
+			        
+						<a class="rss" target="_blank" href="#" title="rss">rss</a>
+			        
+						<a class="zhihu" target="_blank" href="#" title="zhihu">zhihu</a>
+			        
+				</div>
+			</nav>
+		</header>				
+	</div>
+</nav>
+
+      <div class="body-wrap"><article id="[layout]-Objective-C-中的-Blocks-原理探究" class="article article-type-[layout]" itemscope itemprop="blogPost">
+  
+    <div class="article-meta">
+      <a href="/2016/06/14/Objective-C-中的-Blocks-原理探究/" class="article-date">
+  	<time datetime="2016-06-14T10:11:38.000Z" itemprop="datePublished">2016-06-14</time>
+</a>
+    </div>
+  
+  <div class="article-inner">
+    
+      <input type="hidden" class="isFancy" />
+    
+    
+      <header class="article-header">
+        
+  
+    <h1 class="article-title" itemprop="name">
+      Objective-C 中的 Blocks 原理探究
+    </h1>
+  
+
+      </header>
+      
+      <div class="article-info article-info-post">
+        
+        
+
+        <div class="clearfix"></div>
+      </div>
+      
+    
+    <div class="article-entry" itemprop="articleBody">
+      
+        <p>前言</p>
+<p>Blocks 是 OS X v10.6 和 iOS 4.0 引入的新特性。觉的自己对 Blocks 掌握的还不错的话，那就来试着做做这<a href="http://blog.parse.com/learn/engineering/objective-c-blocks-quiz/" target="_blank" rel="external">五个测试题</a> 。怎么样，全做对了吗？没全做对的话就静下心来，好好的总结一下吧。</p>
+<p>本文章的目录结构：</p>
+<pre><code>1 Blocks 基础知识    
+    1.1 Blocks 是什么
+    1.2 Block 变量
+    1.3 __block 变量
+2 Block 使用要注意的问题    
+    2.1 Block 的存储域
+    2.2 __block 变量会随着 Block 变化而变化
+    2.3 解决 Block 循环引用
+3 Block 原理探究    
+    3.1 简单的 Block 原理
+    3.2 Block 截获变量的原理
+    3.3 Block 截获局部变量的出错的原因
+    3.4 Block 截获静态变量的原理
+    3.5 Block 截获 __block 变量的原理
+4 参考文章
+</code></pre><a id="more"></a>
+<h4 id="1-Blocks-基础知识"><a href="#1-Blocks-基础知识" class="headerlink" title="1 Blocks 基础知识"></a>1 Blocks 基础知识</h4><ul>
+<li><p>#####1.1 Blocks 是什么</p>
+<p>  在开发 iOS 程序时经常会用到 Blocks ，但它究竟是什么呢？<a href="https://developer.apple.com/library/mac/documentation/Cocoa/Conceptual/ProgrammingWithObjectiveC/WorkingwithBlocks/WorkingwithBlocks.html" target="_blank" rel="external">苹果官方文档</a>里给的解释是这样的：</p>
+<blockquote>
+<p>Blocks are Objective-C objects, which means they can be added to collections like NSArray or NSDictionary. They also have the ability to capture values from the enclosing scope, making them similar to closures or lambdas in other programming languages.    </p>
+</blockquote>
+<p>  Blocks 是 Objective-C 的对象（稍后会介绍它是什么类的对象），这意味着它们可以添加到像 NSArray 或 NSDictionary 这样的集合中。他们也有捕获词法范围内变量的能力，使他们和其他编程语言里的闭包或者 lambda 相似。</p>
+<p>  上面是官方给出的定义。其实我们可以用一句话来总结： <code>能捕获局部变量的匿名函数</code> 。首先说说它为什么是函数，然后在说说它是怎么捕获局部变量的。我们现在来看看 C 语言中定义函数的语法：</p>
+<pre><code>void test (void) {
+    printf(&quot;Hello World!\n&quot;);
+}
+</code></pre><p>  再来看看 Block 的语法：</p>
+<pre><code>^ void (void) {
+    NSLog(@&quot;Hello World&quot;);
+};    
+
+//其实上面的代码可以简写成下面这样，这里为了说明它和 C 函数的联系：
+^ {
+    NSLog(@&quot;Hello World&quot;);
+};
+</code></pre><p>  Block 和 C 函数相比，只有以下两点不同：</p>
+<pre><code>没有函数名字
+多了 &quot; ^ &quot; 符号。 
+</code></pre><p>  通过上面的比较我们 Block 为什么是匿名函数了，在说明它怎么捕获局部变量。</p>
+<pre><code>NSInteger var = 100;
+oid (^blk)(void) = ^{
+    NSLog(@&quot;%ld&quot;,var);
+};
+var = 0;
+blk();        //执行后输出100
+</code></pre><p>  上面代码中的 Block 语法捕获了局部变量 var 的值，只是变量瞬间的值，并不会修改 val 变量的值。加上 __block 说明符后就能修改了，这部分在 1.3 里面介绍。我们明白了 Blocks 就是  <code>能捕获局部变量的匿名函数</code>。</p>
+</li>
+<li><p>#####1.2 Block 变量</p>
+<p>   在 C 语言中可以把函数赋值给函数指针类型的变量。如下所示：</p>
+<pre><code> int test (int var) {
+    return var + 1;
+}
+
+int (*testPtr) = &amp;test;
+</code></pre><p>  同理，在 Block 语法下也可以将 Block 语法赋值给 Block 类型的变量中。我们先看一下 Block 语法。</p>
+<pre><code>^ 返回值类型 参数列表 表达式
+
+//返回值类型和参数列表为空的时候我们可以省略      
+</code></pre><p>  Block 类型变量和 C 语言函数指针基本一样，只是把 * 替换成了 ^ 。如下所示：</p>
+<pre><code>int (^blk)(int);
+</code></pre><p>  下面把 Block 语法赋值到 Block 类型的变量中，如下所示：</p>
+<pre><code>int (^blk)(int) = ^(int count) {
+    return count + 1;
+};
+</code></pre><p>  上面使用的 Block 类型变量表示太复杂，我们可以用 typedef 来重新定义，如下所示：</p>
+<pre><code>typedef int (^block)(int);
+</code></pre><p>  以后我们就可以使用 block 来定义 Block 类型的变量了。<br>  Block 类型的变量可以有以下用途：</p>
+<ul>
+<li>局部变量(也叫自动变量)</li>
+<li>全局变量</li>
+<li>静态变量</li>
+<li>静态全局变量</li>
+<li>函数参数</li>
+<li>函数返回值        </li>
+</ul>
+</li>
+</ul>
+<ul>
+<li><p>#####1.3 <strong>block 变量<br>  我们把赋有 `</strong>block<code>修饰符的变量称为</code><strong>block` 变量。加上 </strong>block 后就可以修改 Block 语法块中捕获的变量了。</p>
+<pre><code>__block NSInteger var = 100;
+void (^blk)(void) = ^{
+    var = 200;
+};
+blk();
+NSLog(@&quot;%ld&quot;,var);    //输出结果为 200
+</code></pre><p>  如果不加 __block 修饰符，那么编译是不会通过的，如下所示：</p>
+<pre><code>NSInteger var = 100;
+void (^blk)(void) = ^{
+    var = 200;
+};
+blk();
+NSLog(@&quot;%ld&quot;,var);
+</code></pre><p>  会得到一个编译错误提示：</p>
+<p>  <img src="https://raw.githubusercontent.com/zwgithub/blog_pic/master/block_error.jpg" alt="block_error"></p>
+</li>
+</ul>
+<h4 id="2-Block-使用要注意的问题"><a href="#2-Block-使用要注意的问题" class="headerlink" title="2 Block 使用要注意的问题"></a>2 Block 使用要注意的问题</h4><ul>
+<li><p>#####2.1 Block 的存储域<br>  官方文档上说 Blocks 是 Objective-C 的对象，那它到底是是哪个类的对象呢？通过下面的代码来测试下：</p>
+<pre><code>// 代码是在 ARC 下测试的
+void (^maxBlk)(void) = ^(void){};
+
+- (void)test{
+    NSInteger var = 1024;
+    void (^blk)(void) = ^{ printf(&quot;%ld\n&quot;, var); };
+    blk();
+    NSString *str3 = @&quot;1234&quot;;
+    NSLog(@&quot;\n堆:%@\n 栈:%@\n 全局:%@\n&quot;,blk,^{NSLog(@&quot;:%@&quot;, str3);},maxBlk);
+}
+
+//输出的结果为：
+堆:&lt;__NSMallocBlock__: 0x7fd2ca5218d0&gt;
+栈:&lt;__NSStackBlock__: 0x7fff529b4b98&gt;
+全局:&lt;__NSGlobalBlock__: 0x10d24e120&gt;    
+</code></pre><p>  到现在为止知道了 Block     是 <code>__NSMallocBlock__</code> 或者 <code>__NSStackBlock__</code> 或者 <code>__NSGlobalBlock__</code> 类的对象。通过它们的名字，可以知道它们对应的 Block 分别存放在 <code>堆</code> <code>栈</code><br>  <code>数据区(全局)</code> 中。在 ARC 下， <code>__NSStackBlock__</code> 不是很常见，用的也很少。那么问题又来了，Block 什么时候存放在堆上？又什么时候放在全局区呢？在总结出来的情况如下：</p>
+<p>#####放在堆上的情况：</p>
+<ul>
+<li>将 Block 赋值给用 __strong 修饰符修饰的 id 类型的类或 Block 类型成员变量时</li>
+<li>Block 作为函数的返回值时</li>
+<li>在方法名中含有 usingBlock 的 Cocoa 框架方法或 GCD 的 API 中传递 Block 时</li>
+<li>调用 Block 的 copy 实例方法时</li>
+</ul>
+<p>#####放全局上的情况：</p>
+<pre><code>* 放全局变量的地方有 Block 语法时
+* Block 语法中的表达式中不使用捕获的变量时
+</code></pre></li>
+</ul>
+<ul>
+<li><p>#####2.2 <code>__block</code> 变量会随着 Block 变化而变化<br>  当 Block 被复制到堆的时候，它所使用的 <code>__block</code> 变量也会被复制到堆上，并且被 Block 持有。</p>
+<p>  当 Block 被废弃的时候， 它持有的 <code>__block</code> 变量也就会被释放。</p>
+<p>  当 Block 已经在堆上的时候，复制 Block 对它使用的 <code>__block</code> 变量没任何影响。</p>
+<p>  当多个 Block 同时使用 <code>__block</code> 变量时，其中任何一个 Block 被复制到堆上的时候， <code>__block</code> 变量也会被复制到堆上，并且被 Block 持有，当剩下的 Block 被复制到堆上时，被复制的 Block 持有 <code>__block</code> 变量，并且增加 <code>__block</code> 的引用计数。</p>
+</li>
+<li><p>#####2.3 解决 Block 循环引用<br>  先来看看下面的列子：</p>
+<p>  <img src="https://raw.githubusercontent.com/zwgithub/blog_pic/master/block_retain_cycle1.jpg" alt="block_retain_cycle1.jpg"></p>
+<p>  使用 ZWObject 这个类：</p>
+<pre><code>ZWObject *A = [[ZWObject alloc] init];
+NSLog(@&quot;A:%@&quot;,A);
+</code></pre><p>  通过<a href="https://developer.apple.com/library/mac/documentation/Cocoa/Conceptual/ProgrammingWithObjectiveC/EncapsulatingData/EncapsulatingData.html" target="_blank" rel="external">苹果官方文档的 Encapsulating Data</a><br>  给出的下面的这段话，我们明白：默认情况下，Objective-C 类的对象对它的属性和变量是强引用的关系：</p>
+<pre><code>By default, both Objective-C properties and variables maintain strong references to their objects.
+</code></pre><p>  通过上面我们可以知道，此例子中 ZWObject 类的对象 A 对它的成员变量 <code>_blk</code> 是强引用关系。在把 Block 赋值给 <code>_blk</code> 的时候， <code>_blk</code> 对 Block 是强引用。也就是说 A 对象对 Block 是强引用关系。并且由于 Block 语法赋值给了 _blk 变量，此时生成在栈上的 Block 便会由栈复制到堆，并且持有它所使用的 self，也就是持有对象 A。此时 A 对象持有 Block，Block 持有 A 对象，循环引用就发生了。编译器在编译的时候就能查出，所以给出如 2.3 中图所示的警告。</p>
+<p>  解决此循环引用有两种办法：一是使用 <code>__weak</code> 修饰符，二是使用 <code>__block</code> 变量。</p>
+<p>  使用 <code>__weak</code>修饰符：在 ZWObject 的 init 方法中做如下修改：</p>
+<pre><code>- (instancetype)init {
+    self = [super init];
+    __weak typeof(self) weakSelf = self;
+    _blk = ^{
+        NSLog(@&quot;%@&quot;,weakSelf);
+    };
+    return self;
+}
+</code></pre></li>
+</ul>
+<pre><code>使用 `__block` ：有两点需要注意 
+
+    在 Block 里面把使用后的 `__block` 变量设置为空。
+    必须执行 Block 方法。
+
+在 ZWObject 的 init 方法中修改如下：
+
+    - (instancetype)init {
+        self = [super init];
+        __block typeof(self) bSelf = self;
+        _blk = ^{
+            NSLog(@&quot;%@&quot;,bSelf);
+            bSelf = nil;
+        };
+        return self;
+    }
+
+    //必须要执行此方法
+    - (void)execBlock {
+        _blk();
+    }
+
+
+在使用 ZWObject 的地方修改如下：
+
+    ZWObject *A = [[ZWObject alloc] init];
+    [A execBlock];
+    NSLog(@&quot;object:%@&quot;,A);
+</code></pre><h4 id="3-Block-原理探究"><a href="#3-Block-原理探究" class="headerlink" title="3 Block 原理探究"></a>3 Block 原理探究</h4><ul>
+<li><p>#####3.1 简单的 Block 原理<br>  Block 实际上就是被作为普通的 C 语言来来处理的，可以通过 clang (LLVM) 编译器转换成我们能读懂的代码。通过 <code>-rewirte-ojbc</code> 选项就能把含有 Block 语法的源代码转换为 C++ 的源代码。下面我们来看一下具体怎么操作。<br>  源码如下：</p>
+<p>  <img src="https://raw.githubusercontent.com/zwgithub/blog_pic/master/block0_test.jpg" alt="block0_test.jpg"></p>
+<p>  调用 <code>clang -rewrite-objc block0.c</code> 命令后会生成一个 block0.cpp ，打开这个文件，发现里面的代码居然有 500 多行，也是醉了。。。 抽出其中的主要的代码如下：</p>
+<p>  <img src="https://raw.githubusercontent.com/zwgithub/blog_pic/master/bloc0_cpp.jpg" alt="block_cpp.jpg"></p>
+<p>  根据变换后的源码我们可以看出来，clang 会根据 Block 所属的函数名（此处为 main ）和该 Block 在函数中出现的顺序（此处为 0 ）来给函数命名。</p>
+<p>  都有 <code>printf(&quot;Hello, World!&quot;);</code>    这句的对应关系如下：</p>
+<pre><code>static void __main_block_func_0(struct __main_block_impl_0 *__cself) {
+    printf(&quot;Hello, World!&quot;);
+}
+</code></pre><p>  通过源码和转换后的源码进行比较，能看出源代码中的 Block 语法赋值给 blk 对应的为以下代码：</p>
+<pre><code>void (*blk)(void) = ((void (*)())&amp;__main_block_impl_0((void *)__main_block_func_0, &amp;__main_block_desc_0_DATA));
+</code></pre><p>  源代码中调用 Block 的地方对应如下代码：</p>
+<pre><code>((void (*)(__block_impl *))((__block_impl *)blk)-&gt;FuncPtr)((__block_impl *)blk);
+</code></pre><p>######现在来仔细分析一下：<br>  先来看一下 Block 语法赋值给 blk 对应的转换后的代码，对应的类型转换太多，去掉类型转换后，如下所示：</p>
+<pre><code>//转换后的代码
+void (*blk)(void) = ((void (*)())&amp;__main_block_impl_0((void *)__main_block_func_0, &amp;__main_block_desc_0_DATA));
+
+//去掉类型转换后的代码
+void (*blk)(void) = &amp;__main_block_impl_0(参数1, 参数2);
+</code></pre><p>  可以看出来，Block 语法赋值给 blk 的过程就想当于把 <code>__main_block_impl_0</code> 结构体指针赋值给函数指针 blk 的过程。<br>  参数 1 为 <code>__main_block_func_0</code>，也就是匿名函数的函数名称，通过<code>__main_block_impl_0</code> 结构体的构造函数可以知道把它赋值给了 <code>FuncPtr</code> 。参数 2 为 <code>__main_block_desc_0_DATA</code>，其实就是 <code>__main_block_impl_0</code> 的结构体的大小。</p>
+<p>  再来看看调用的部分：</p>
+<pre><code>//转换后的代码
+((void (*)(__block_impl *))((__block_impl *)blk)-&gt;FuncPtr)((__block_impl *)blk);
+
+//去掉类型转换后的代码
+(*blk-&gt;impl.FuncPtr)(blk);
+</code></pre><p>  通过分析可知，其实就是函数指针调用函数的过程。从这个过程中可以得出 Block 以自身作为参数进行了传递，<code>__main_block_func_0</code> 函数的参数 <code>__cself</code> 指向了 Block 自己。通过 __main_block_impl_0 结构体构造函数里的这行代码 <code>impl.isa = &amp;_NSConcreteStackBlock</code>,也证实了此处的 Block 是 <code>_NSConcreteStackBlock</code> “类” 的对象。 到此为止我们终于明白了 Block 的实质。</p>
+</li>
+<li><p>#####3.2 Block 截获变量的原理<br>  同上面的分析方法一样，先来看一下源代码：</p>
+<p>  <img src="https://raw.githubusercontent.com/zwgithub/blog_pic/master/block1_test.jpg" alt="block1_test.jgp"></p>
+<p>  经 clang 转换后的源码如下：</p>
+<p>  <img src="https://raw.githubusercontent.com/zwgithub/blog_pic/master/block1_cpp.jpg" alt="block1_test.jgp"></p>
+<p>  同 3.1 转换后的源码比较，被 Block 捕获的 val 变量被添加到 <code>__main_block_impl_0</code> 的结构体中。通过这一点我们明白了在执行 Block 之前修改被它捕获的变量不起作用的原因。</p>
+</li>
+<li><p>#####3.3 Block 截获局部变量的出错的原因</p>
+<p>  同上面一样，先来看源码：</p>
+<p>  <img src="https://raw.githubusercontent.com/zwgithub/blog_pic/master/block2_test.jpg" alt="block2_test.jpg"></p>
+<p>  用 clang 编译时报错，提示信息如下：</p>
+<p>  <img src="https://raw.githubusercontent.com/zwgithub/blog_pic/master/block_error.jpg" alt="block2_error.jpg"></p>
+<p>  经 clang 编译时候报错，提示我们变量是不能修改的，并提示缺少了 <code>__block</code> 修饰符。那它为什么不能被修改呢？此处的 var 变量为局部变量，在 OBJective-C 中我们经常把 Block 用来处理回调，执行 Block 的时候 var 可能已经被回收了。当超出 var 的作用域后，var 变量被回收，如果在 Block 里面修改 var 的话就崩溃了。这里不让在 Block 里面修改 var 的值是非常合理的。</p>
+</li>
+<li><p>#####3.4 Block 截获静态变量的原理<br>  同上面一样，先来看源码：</p>
+<p>  <img src="https://raw.githubusercontent.com/zwgithub/blog_pic/master/block3_test.jpg" alt="block3_test.jpg"></p>
+<p>  经 clang 编译后的源码如下所示：</p>
+<p>  <img src="https://raw.githubusercontent.com/zwgithub/blog_pic/master/block3_cpp.jpg" alt="block3_cpp.jpg"></p>
+<p>  在 <code>__main_block_impl_0</code> 结构体的构造函数中，是把 var 的地址传递过去的。在 <code>__main_block_func_0</code> 使用 var 时用的是 var 的地址。为什么静态变量能够在 Block 内修改呢？这是因为静态变量存储在数据区（data 区），它能保证无论什么时候执行 Block ，它都没被回收，所以能在 Block 内部修改。</p>
+</li>
+<li><p>#####3.5 Block 截获 <code>__block</code> 变量的原理</p>
+<p>  再来看最后一种情况，还是先看源码：</p>
+<p>  <img src="https://raw.githubusercontent.com/zwgithub/blog_pic/master/block4_test.jpg" alt="block4_test.jpg"></p>
+<p>  经 clang 编译后的源码如下所示：</p>
+<p>  <img src="https://raw.githubusercontent.com/zwgithub/blog_pic/master/block4_cpp.jpg" alt="block4_test.jpg"></p>
+<p>  加上 <code>__block</code> 后代码量增大了。同 Block 捕获静态变量相比，多出了以下内容：</p>
+<pre><code>* var 变量变成为了 `__Block_byref_val_0` 结构体类型的变量
+* __main_block_desc_0 结构体中多出了 copy 和 dispose 方法。
+* __main_block_impl_0 结构体中多出了 `__Block_byref_val_0` 结构体类型的指针
+* __main_block_func_0 在访问 `__block` 变量的时候是通过 `__forwarding` 指针来访问的
+</code></pre><p>  那么一大堆问题就来了。</p>
+<pre><code>__main_block_impl_0 结构体中为什么不把 __Block_byref_val_0 结构体引入进来，而是引用的 __Block_byref_val_0 结构体类型的指针？
+
+__main_block_desc_0 结构体里多出来的 copy 和 dispose 方法有什么用呢？
+
+访问 __block 变量的时候为什么要通过 __forwarding 指针来访问？ 
+</code></pre><p>  我们从中发现 <code>__block</code> 变量竟然被转成了 <code>__Block_byref_val_0</code> 结构体类型的变量。<code>__Block_byref_val_0</code> 结构体申明如下：</p>
+<pre><code>struct __Block_byref_val_0 {
+      void *__isa;
+    __Block_byref_val_0 *__forwarding;
+     int __flags;
+     int __size;
+     int val;
+};
+</code></pre><p>  该结构体中的最后一个成员变量相当于原来的 <code>__block</code> 变量。<code>__forwarding</code> 是指向自己的结构体指针。<code>__main_block_impl_0</code> 结构体中引入的是 <code>__Block_byref_val_0</code> 结构体指针，这样能保证从多个 Block 中使用的变量为同一个 <code>__block</code> 变量，也能保证一个 Block 使用多个 <code>__block</code> 变量时，只要增加 <code>__main_block_impl_0</code> 结构体的成员变量和构造函数的参数即可。当 Block 被复制到堆的时候，它所使用的 <code>__block</code> 变量也会被复制到堆上，并且被 Block 持有。<code>__block</code> 被复制到堆上时正是用的 <code>__main_block_desc_0</code> 结构体里的 copy 函数。当 Block 被销毁的时候，它使用的 <code>__block</code> 变量也需要被销毁，此时用的正是 <code>__main_block_desc_0</code> 结构体里的 dispose 函数。不管 Block 在栈上，还是在堆上，要想正确的访问它使用的 <code>__block</code> 变量，用 <code>__block</code> 结构体里指向自己的 <code>__forwarding</code> 是最好的办法。</p>
+</li>
+</ul>
+<h4 id="4-参考文章"><a href="#4-参考文章" class="headerlink" title="4 参考文章"></a>4 参考文章</h4><ul>
+<li><p><a href="https://developer.apple.com/library/mac/documentation/Cocoa/Conceptual/ProgrammingWithObjectiveC/WorkingwithBlocks/WorkingwithBlocks.html" target="_blank" rel="external">苹果官方文档：Programming with Objective-C</a></p>
+</li>
+<li><p><a href="http://blog.parse.com/learn/engineering/objective-c-blocks-quiz/" target="_blank" rel="external">五个测试题</a></p>
+</li>
+<li><p><a href="https://developer.apple.com/library/mac/documentation/Cocoa/Conceptual/Blocks/Articles/00_Introduction.html#//apple_ref/doc/uid/TP40007502-CH1-SW1" target="_blank" rel="external">苹果官方文档：Blocks Programming Topics</a></p>
+</li>
+<li><p>Objective-C高级编程：iOS与OS X多线程和内存管理</p>
+</li>
+</ul>
+
+      
+    </div>
+    
+  </div>
+  
+    
+<nav id="article-nav">
+  
+    <a href="/2016/06/14/iOS-中-native-和-JavaScript-的交互原理以及-WebViewJavascript-源码分析/" id="article-nav-newer" class="article-nav-link-wrap">
+      <strong class="article-nav-caption"><</strong>
+      <div class="article-nav-title">
+        
+          iOS 中 native 和 JavaScript 的交互原理以及 WebViewJavascript 源码分析
+        
+      </div>
+    </a>
+  
+  
+    <a href="/2016/06/14/开始写-blog-了/" id="article-nav-older" class="article-nav-link-wrap">
+      <div class="article-nav-title">开始写博客了</div>
+      <strong class="article-nav-caption">></strong>
+    </a>
+  
+</nav>
+
+  
+</article>
+
+
+<div class="share_jia">
+	<!-- JiaThis Button BEGIN -->
+	<div class="jiathis_style">
+		<span class="jiathis_txt">分享到: &nbsp; </span>
+		<a class="jiathis_button_facebook"></a> 
+    <a class="jiathis_button_twitter"></a>
+    <a class="jiathis_button_plus"></a> 
+    <a class="jiathis_button_tsina"></a>
+		<a class="jiathis_button_cqq"></a>
+		<a class="jiathis_button_douban"></a>
+		<a class="jiathis_button_weixin"></a>
+		<a class="jiathis_button_tumblr"></a>
+    <a href="http://www.jiathis.com/share" class="jiathis jiathis_txt jtico jtico_jiathis" target="_blank"></a>
+	</div>
+	<script type="text/javascript" src="http://v3.jiathis.com/code/jia.js?uid=1405949716054953" charset="utf-8"></script>
+	<!-- JiaThis Button END -->
+</div>
+
+
+
+
+
+
+<div class="duoshuo">
+	<!-- 多说评论框 start -->
+	<div class="ds-thread" data-thread-key="Objective-C-中的-Blocks-原理探究" data-title="Objective-C 中的 Blocks 原理探究" data-url="http://yoursite.com/2016/06/14/Objective-C-中的-Blocks-原理探究/"></div>
+	<!-- 多说评论框 end -->
+	<!-- 多说公共JS代码 start (一个网页只需插入一次) -->
+	<script type="text/javascript">
+	var duoshuoQuery = {short_name:"true"};
+	(function() {
+		var ds = document.createElement('script');
+		ds.type = 'text/javascript';ds.async = true;
+		ds.src = (document.location.protocol == 'https:' ? 'https:' : 'http:') + '//static.duoshuo.com/embed.js';
+		ds.charset = 'UTF-8';
+		(document.getElementsByTagName('head')[0] 
+		 || document.getElementsByTagName('body')[0]).appendChild(ds);
+	})();
+	</script>
+	<!-- 多说公共JS代码 end -->
+</div>
+
+
+
+
+</div>
+      <footer id="footer">
+  <div class="outer">
+    <div id="footer-info">
+    	<div class="footer-left">
+    		&copy; 2016 Zhenwei Cao
+    	</div>
+      	<div class="footer-right">
+      		<a href="http://hexo.io/" target="_blank">Hexo</a>  Theme <a href="https://github.com/litten/hexo-theme-yilia" target="_blank">Yilia</a> by Litten
+      	</div>
+    </div>
+  </div>
+</footer>
+    </div>
+    
+  <link rel="stylesheet" href="/fancybox/jquery.fancybox.css">
+
+
+<script>
+	var yiliaConfig = {
+		fancybox: true,
+		mathjax: true,
+		animate: true,
+		isHome: false,
+		isPost: true,
+		isArchive: false,
+		isTag: false,
+		isCategory: false,
+		open_in_new: true
+	}
+</script>
+<script src="http://7.url.cn/edu/jslib/comb/require-2.1.6,jquery-1.9.1.min.js"></script>
+<script src="/js/main.js"></script>
+
+
+
+
+
+
+<script type="text/x-mathjax-config">
+MathJax.Hub.Config({
+    tex2jax: {
+        inlineMath: [ ['$','$'], ["\\(","\\)"]  ],
+        processEscapes: true,
+        skipTags: ['script', 'noscript', 'style', 'textarea', 'pre', 'code']
+    }
+});
+
+MathJax.Hub.Queue(function() {
+    var all = MathJax.Hub.getAllJax(), i;
+    for(i=0; i < all.length; i += 1) {
+        all[i].SourceElement().parentNode.className += ' has-jax';                 
+    }       
+});
+</script>
+
+<script type="text/javascript" src="http://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML">
+</script>
+
+
+  </div>
+</body>
+</html>
