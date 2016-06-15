@@ -14,28 +14,29 @@
 <meta property="og:site_name" content="Zhenwei">
 <meta property="og:description" content="背景
 项目进入测试阶段要不停的给测试的同学打包，我们就不得不停下手中的工作，Archive -&amp;gt; 导出 ipa 包 -&amp;gt; 发给测试的同学 -&amp;gt; 测试的同学通过 iTunes 装到手机上测试 -&amp;gt; 发现 bug，我们修改完后又需要重新打包，然后不停的重复上面的工作，你烦不烦？反正我是受够了。。。正是有了上面的痛点，才会去想能不能我们提交代码后让测试的同学自己打包，然后通过一个">
-<meta property="og:image" content="http://yoursite.com/https://">
-<meta property="og:image" content="http://yoursite.com/https://">
-<meta property="og:image" content="http://yoursite.com/https://">
-<meta property="og:image" content="http://yoursite.com/https://">
-<meta property="og:image" content="http://yoursite.com/https://">
-<meta property="og:image" content="http://yoursite.com/https://">
-<meta property="og:image" content="http://yoursite.com/https://">
-<meta property="og:image" content="http://yoursite.com/https://">
-<meta property="og:image" content="http://yoursite.com/https://">
-<meta property="og:image" content="http://yoursite.com/https://">
-<meta property="og:image" content="http://yoursite.com/https://">
-<meta property="og:image" content="http://yoursite.com/https://">
-<meta property="og:image" content="http://yoursite.com/https://">
-<meta property="og:image" content="http://yoursite.com/https://">
-<meta property="og:image" content="http://yoursite.com/https://">
-<meta property="og:image" content="http://yoursite.com/https://">
-<meta property="og:updated_time" content="2016-06-15T01:23:08.000Z">
+<meta property="og:image" content="https://raw.githubusercontent.com/zwgithub/blog_pic/master/jenkins/jenkins1.png">
+<meta property="og:image" content="https://raw.githubusercontent.com/zwgithub/blog_pic/master/jenkins/jenkins2.png">
+<meta property="og:image" content="https://raw.githubusercontent.com/zwgithub/blog_pic/master/jenkins/jenkins3.png">
+<meta property="og:image" content="https://raw.githubusercontent.com/zwgithub/blog_pic/master/jenkins/jenkins4.png">
+<meta property="og:image" content="https://raw.githubusercontent.com/zwgithub/blog_pic/master/jenkins/jenkins5.png">
+<meta property="og:image" content="https://raw.githubusercontent.com/zwgithub/blog_pic/master/jenkins/jenkins6.png">
+<meta property="og:image" content="https://raw.githubusercontent.com/zwgithub/blog_pic/master/jenkins/jenkins7.png">
+<meta property="og:image" content="https://raw.githubusercontent.com/zwgithub/blog_pic/master/jenkins/jenkins8.png">
+<meta property="og:image" content="https://raw.githubusercontent.com/zwgithub/blog_pic/master/jenkins/jenkins9.png">
+<meta property="og:image" content="https://raw.githubusercontent.com/zwgithub/blog_pic/master/jenkins/jenkins10.png">
+<meta property="og:image" content="https://raw.githubusercontent.com/zwgithub/blog_pic/master/jenkins/jenkins11.png">
+<meta property="og:image" content="https://raw.githubusercontent.com/zwgithub/blog_pic/master/jenkins/jenkins12.png">
+<meta property="og:image" content="https://raw.githubusercontent.com/zwgithub/blog_pic/master/jenkins/jenkins13.png">
+<meta property="og:image" content="https://raw.githubusercontent.com/zwgithub/blog_pic/master/jenkins/jenkins14.png">
+<meta property="og:image" content="https://raw.githubusercontent.com/zwgithub/blog_pic/master/jenkins/jenkins15.png">
+<meta property="og:image" content="https://raw.githubusercontent.com/zwgithub/blog_pic/master/jenkins/jenkins16.png">
+<meta property="og:image" content="https://raw.githubusercontent.com/zwgithub/blog_pic/master/jenkins/jenkins17.png">
+<meta property="og:updated_time" content="2016-06-15T05:47:38.000Z">
 <meta name="twitter:card" content="summary">
 <meta name="twitter:title" content="利用 Jenkins 自动生成 ipa 包">
 <meta name="twitter:description" content="背景
 项目进入测试阶段要不停的给测试的同学打包，我们就不得不停下手中的工作，Archive -&amp;gt; 导出 ipa 包 -&amp;gt; 发给测试的同学 -&amp;gt; 测试的同学通过 iTunes 装到手机上测试 -&amp;gt; 发现 bug，我们修改完后又需要重新打包，然后不停的重复上面的工作，你烦不烦？反正我是受够了。。。正是有了上面的痛点，才会去想能不能我们提交代码后让测试的同学自己打包，然后通过一个">
-<meta name="twitter:image" content="http://yoursite.com/https://">
+<meta name="twitter:image" content="https://raw.githubusercontent.com/zwgithub/blog_pic/master/jenkins/jenkins1.png">
   
     <link rel="alternative" href="/atom.xml" title="Zhenwei" type="application/atom+xml">
   
@@ -246,39 +247,98 @@
 <pre><code>launchctl load ~/Library/LaunchAgents/homebrew.mxcl.jenkins.plist
 </code></pre><p>然后就可以在浏览器里通过 <a href="http://localhost:8080" target="_blank" rel="external">http://localhost:8080</a> 来看到 Jenkins了。第一次安装会让输入密码，密码可以在这里查看</p>
 <pre><code>cat /var/lib/jenkins/secrets/initialAdminPassword
-</code></pre><p>，接着装好默认的插件后就可以使用了。界面如下：</p>
-<p><img src="https://" alt="jenkins1.jpg"></p>
+</code></pre><p>接着装好默认的插件后就可以使用了。界面如下：</p>
+<p><img src="https://raw.githubusercontent.com/zwgithub/blog_pic/master/jenkins/jenkins1.png" alt="jenkins1.jpg"></p>
 <p>现在来创建一个新任务：</p>
-<p><img src="https://" alt="jenkins1.jpg"></p>
+<p><img src="https://raw.githubusercontent.com/zwgithub/blog_pic/master/jenkins/jenkins2.png" alt="jenkins1.jpg"></p>
 <p>这里以 svn 为例，git 当然也是可以的。配置源码 svn 如下所示</p>
-<p><img src="https://" alt="jenkins1.jpg"></p>
+<p><img src="https://raw.githubusercontent.com/zwgithub/blog_pic/master/jenkins/jenkins3.png" alt="jenkins1.jpg"></p>
 <p>添加我们需要的插件</p>
-<p><img src="https://" alt="jenkins1.jpg"></p>
+<p><img src="https://raw.githubusercontent.com/zwgithub/blog_pic/master/jenkins/jenkins4.png" alt="jenkins1.jpg"></p>
 <p>在可选插件里输入我们想要安装的插件，我们需要用的有：<br>1.Xcode Plugin     打 ipa 包要用到的<br>2.Publish Over FTP Plugin     上传 ftp 服务器要用到的</p>
 <p>构建触发器，这里配置的是每 15 分钟检测一下 svn 的版本号，有变化的话就开始打包</p>
-<p><img src="https://" alt="jenkins1.jpg"></p>
+<p><img src="https://raw.githubusercontent.com/zwgithub/blog_pic/master/jenkins/jenkins5.png" alt="jenkins1.jpg"></p>
 <p>配置 xcode</p>
-<p><img src="https://" alt="jenkins1.jpg"></p>
-<p><img src="https://" alt="jenkins1.jpg"></p>
-<p><img src="https://" alt="jenkins1.jpg"></p>
+<p><img src="https://raw.githubusercontent.com/zwgithub/blog_pic/master/jenkins/jenkins6.png" alt="jenkins1.jpg"></p>
+<p><img src="https://raw.githubusercontent.com/zwgithub/blog_pic/master/jenkins/jenkins7.png" alt="jenkins1.jpg"></p>
+<p><img src="https://raw.githubusercontent.com/zwgithub/blog_pic/master/jenkins/jenkins8.png" alt="jenkins1.jpg"></p>
 <p>可以添加打包完成后执行本地 shell</p>
-<p><img src="https://" alt="jenkins1.jpg"></p>
+<p><img src="https://raw.githubusercontent.com/zwgithub/blog_pic/master/jenkins/jenkins9.png" alt="jenkins1.jpg"></p>
 <p>配置 ftp<br>现在系统设置里配置，然后再到 jenkins_test 里面去配置<br>系统配置如下：</p>
-<p><img src="https://" alt="jenkins1.jpg"></p>
+<p><img src="https://raw.githubusercontent.com/zwgithub/blog_pic/master/jenkins/jenkins10.png" alt="jenkins1.jpg"></p>
 <p>点开高级以后别忘了设置里面的端口号</p>
-<p><img src="https://" alt="jenkins1.jpg"></p>
+<p><img src="https://raw.githubusercontent.com/zwgithub/blog_pic/master/jenkins/jenkins11.png" alt="jenkins1.jpg"></p>
+<p><img src="https://raw.githubusercontent.com/zwgithub/blog_pic/master/jenkins/jenkins12.png" alt="jenkins1.jpg"></p>
 <p>然后回到 jenkins_test 做相关的配置</p>
-<p><img src="https://" alt="jenkins1.jpg"></p>
+<p><img src="https://raw.githubusercontent.com/zwgithub/blog_pic/master/jenkins/jenkins13.png" alt="jenkins1.jpg"></p>
 <p>点击立即构建后，从 Console Output 可以看出先更新svn，然后打包，打包后把 ipa 包传到服务器上，</p>
-<p><img src="https://" alt="jenkins1.jpg"></p>
+<p><img src="https://raw.githubusercontent.com/zwgithub/blog_pic/master/jenkins/jenkins14.png" alt="jenkins1.jpg"></p>
 <p>至此可以用 Jenkins 来自动打包上传了，接下来要做的就是测试的同学通过一个 url 来直接安装 ipa 到手机上，具体的步骤如下：<br>1.准备 manifest.plist  文件</p>
-<p><img src="https://" alt="jenkins1.jpg"></p>
+<p><img src="https://raw.githubusercontent.com/zwgithub/blog_pic/master/jenkins/jenkins15.png" alt="jenkins1.jpg"></p>
 <p>2.准备 html 文件，目的是让测试同学通过这个下载 ipa 包，本 demo 如下：</p>
-<p><img src="https://" alt="jenkins1.jpg"></p>
+<p><img src="https://raw.githubusercontent.com/zwgithub/blog_pic/master/jenkins/jenkins16.png" alt="jenkins1.jpg"></p>
 <p>源码如下：</p>
-<p><img src="https://" alt="jenkins1.jpg"></p>
+<p><img src="https://raw.githubusercontent.com/zwgithub/blog_pic/master/jenkins/jenkins17.png" alt="jenkins1.jpg"></p>
 <p>注意：在 iOS7.1 后这个 manifest.plist 的地址必须要为 https 的，要不不能正确的安装到手机上。没有用 https 的可以在这里免费申请一个：<br><a href="https://www.startssl.com" target="_blank" rel="external">https://www.startssl.com</a></p>
-
+<p>附件<br>html 文件：</p>
+<pre><code>&lt;!DOCTYPE HTML PUBLIC &quot;-//W3C//DTD HTML 4.01 Transitional//EN&quot; &quot;http://www.w3.org/TR/html4/loose.dtd&quot;&gt;
+&lt;html&gt;
+&lt;meta http-equiv=&quot;Content-Type&quot; content=&quot;text/html;charset=UTF-8&quot; /&gt;
+&lt;head&gt;
+    &lt;title&gt;OrderMeet&lt;/title&gt;
+&lt;/head&gt;
+&lt;body&gt;
+    &lt;ul&gt;
+        &lt;li&gt;&lt;a href=&quot;itms-services://?action=download-manifest&amp;url=https://example.cn/soft/manifest.plist&quot;&gt; 点击下载&lt;/a&gt;
+        &lt;/li&gt;
+    &lt;/ul&gt; 
+&lt;/body&gt;
+&lt;/html&gt;
+</code></pre><p>plist 文件：</p>
+<pre><code>&lt;?xml version=&quot;1.0&quot; encoding=&quot;UTF-8&quot;?&gt;
+&lt;!DOCTYPE plist PUBLIC &quot;-//Apple//DTD PLIST 1.0//EN&quot; &quot;http://www.apple.com/DTDs/PropertyList-1.0.dtd&quot;&gt;
+&lt;plist version=&quot;1.0&quot;&gt;
+&lt;dict&gt;
+&lt;key&gt;items&lt;/key&gt;
+&lt;array&gt;
+    &lt;dict&gt;
+        &lt;key&gt;assets&lt;/key&gt;
+        &lt;array&gt;
+            &lt;dict&gt;
+                &lt;key&gt;kind&lt;/key&gt;
+                &lt;string&gt;software-package&lt;/string&gt;
+                &lt;key&gt;url&lt;/key&gt;
+                &lt;string&gt;https://abc.com/HelloJenkins.ipa&lt;/string&gt;
+            &lt;/dict&gt;
+            &lt;dict&gt;
+                &lt;key&gt;kind&lt;/key&gt;
+                &lt;string&gt;display-image&lt;/string&gt;
+                &lt;key&gt;url&lt;/key&gt;
+                &lt;string&gt;https://abc.com/icon.png&lt;/string&gt;
+            &lt;/dict&gt;
+            &lt;dict&gt;
+                &lt;key&gt;kind&lt;/key&gt;
+                &lt;string&gt;full-size-image&lt;/string&gt;
+                &lt;key&gt;url&lt;/key&gt;
+                &lt;string&gt;https://abc.com/icon%402x.png&lt;/string&gt;
+            &lt;/dict&gt;
+        &lt;/array&gt;
+        &lt;key&gt;metadata&lt;/key&gt;
+        &lt;dict&gt;
+            &lt;key&gt;bundle-identifier&lt;/key&gt;
+            &lt;string&gt;test.com&lt;/string&gt;
+            &lt;key&gt;bundle-version&lt;/key&gt;
+            &lt;string&gt;1.0&lt;/string&gt;
+            &lt;key&gt;kind&lt;/key&gt;
+            &lt;string&gt;software&lt;/string&gt;
+            &lt;key&gt;title&lt;/key&gt;
+            &lt;string&gt;HelloJenkins&lt;/string&gt;
+        &lt;/dict&gt;
+    &lt;/dict&gt;
+&lt;/array&gt;
+&lt;/dict&gt;
+&lt;/plist&gt;
+</code></pre>
       
     </div>
     

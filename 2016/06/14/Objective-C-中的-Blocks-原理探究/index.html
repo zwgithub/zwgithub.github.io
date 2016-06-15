@@ -26,7 +26,19 @@ Blocks 是 OS X v10.6 和 iOS 4.0 引入的新特性。觉的自己对 Blocks �
     1.2 Block 变量
     1.3 __block 变量
 2 Block">
-<meta property="og:updated_time" content="2016-06-15T04:08:53.000Z">
+<meta property="og:image" content="https://raw.githubusercontent.com/zwgithub/blog_pic/master/block_error.jpg">
+<meta property="og:image" content="https://raw.githubusercontent.com/zwgithub/blog_pic/master/block_retain_cycle1.jpg">
+<meta property="og:image" content="https://raw.githubusercontent.com/zwgithub/blog_pic/master/block0_test.jpg">
+<meta property="og:image" content="https://raw.githubusercontent.com/zwgithub/blog_pic/master/bloc0_cpp.jpg">
+<meta property="og:image" content="https://raw.githubusercontent.com/zwgithub/blog_pic/master/block1_test.jpg">
+<meta property="og:image" content="https://raw.githubusercontent.com/zwgithub/blog_pic/master/block1_cpp.jpg">
+<meta property="og:image" content="https://raw.githubusercontent.com/zwgithub/blog_pic/master/block2_test.jpg">
+<meta property="og:image" content="https://raw.githubusercontent.com/zwgithub/blog_pic/master/block_error.jpg">
+<meta property="og:image" content="https://raw.githubusercontent.com/zwgithub/blog_pic/master/block3_test.jpg">
+<meta property="og:image" content="https://raw.githubusercontent.com/zwgithub/blog_pic/master/block3_cpp.jpg">
+<meta property="og:image" content="https://raw.githubusercontent.com/zwgithub/blog_pic/master/block4_test.jpg">
+<meta property="og:image" content="https://raw.githubusercontent.com/zwgithub/blog_pic/master/block4_cpp.jpg">
+<meta property="og:updated_time" content="2016-06-15T05:12:55.000Z">
 <meta name="twitter:card" content="summary">
 <meta name="twitter:title" content="Objective-C 中的 Blocks 原理探究">
 <meta name="twitter:description" content="前言
@@ -37,6 +49,7 @@ Blocks 是 OS X v10.6 和 iOS 4.0 引入的新特性。觉的自己对 Blocks �
     1.2 Block 变量
     1.3 __block 变量
 2 Block">
+<meta name="twitter:image" content="https://raw.githubusercontent.com/zwgithub/blog_pic/master/block_error.jpg">
   
     <link rel="alternative" href="/atom.xml" title="Zhenwei" type="application/atom+xml">
   
@@ -319,8 +332,8 @@ void (^blk)(void) = ^{
 blk();
 NSLog(@&quot;%ld&quot;,var);
 </code></pre><p>会得到一个编译错误提示：</p>
-<pre><code>![block_error](https://raw.githubusercontent.com/zwgithub/blog_pic/master/block_error.jpg)
-</code></pre><h4 id="2-Block-使用要注意的问题"><a href="#2-Block-使用要注意的问题" class="headerlink" title="2 Block 使用要注意的问题"></a>2 Block 使用要注意的问题</h4><p>2.1 Block 的存储域<br>官方文档上说 Blocks 是 Objective-C 的对象，那它到底是是哪个类的对象呢？通过下面的代码来测试下：</p>
+<p><img src="https://raw.githubusercontent.com/zwgithub/blog_pic/master/block_error.jpg" alt="block_error"></p>
+<h4 id="2-Block-使用要注意的问题"><a href="#2-Block-使用要注意的问题" class="headerlink" title="2 Block 使用要注意的问题"></a>2 Block 使用要注意的问题</h4><p>2.1 Block 的存储域<br>官方文档上说 Blocks 是 Objective-C 的对象，那它到底是是哪个类的对象呢？通过下面的代码来测试下：</p>
 <pre><code>// 代码是在 ARC 下测试的
 void (^maxBlk)(void) = ^(void){};
 
@@ -353,8 +366,8 @@ void (^maxBlk)(void) = ^(void){};
 当多个 Block 同时使用 `__block` 变量时，其中任何一个 Block 被复制到堆上的时候， `__block` 变量也会被复制到堆上，并且被 Block 持有，当剩下的 Block 被复制到堆上时，被复制的 Block 持有 `__block` 变量，并且增加 `__block` 的引用计数。
 </code></pre><p>2.3 解决 Block 循环引用</p>
 <p>先来看看下面的列子：</p>
-<pre><code>![block_retain_cycle1.jpg](https://raw.githubusercontent.com/zwgithub/blog_pic/master/block_retain_cycle1.jpg)
-</code></pre><p>使用 ZWObject 这个类：</p>
+<p><img src="https://raw.githubusercontent.com/zwgithub/blog_pic/master/block_retain_cycle1.jpg" alt="block_retain_cycle1.jpg"></p>
+<p>使用 ZWObject 这个类：</p>
 <pre><code>ZWObject *A = [[ZWObject alloc] init];
 NSLog(@&quot;A:%@&quot;,A);
 </code></pre><p>通过<a href="https://developer.apple.com/library/mac/documentation/Cocoa/Conceptual/ProgrammingWithObjectiveC/EncapsulatingData/EncapsulatingData.html" target="_blank" rel="external">苹果官方文档的 Encapsulating Data</a><br>给出的下面的这段话，我们明白：默认情况下，Objective-C 类的对象对它的属性和变量是强引用的关系：</p>
@@ -393,10 +406,10 @@ NSLog(@&quot;A:%@&quot;,A);
 [A execBlock];
 NSLog(@&quot;object:%@&quot;,A);
 </code></pre><h4 id="3-Block-原理探究"><a href="#3-Block-原理探究" class="headerlink" title="3 Block 原理探究"></a>3 Block 原理探究</h4><p>3.1 简单的 Block 原理<br>Block 实际上就是被作为普通的 C 语言来来处理的，可以通过 clang (LLVM) 编译器转换成我们能读懂的代码。通过 <code>-rewirte-ojbc</code> 选项就能把含有 Block 语法的源代码转换为 C++ 的源代码。下面我们来看一下具体怎么操作。<br>源码如下：</p>
-<pre><code>![block0_test.jpg](https://raw.githubusercontent.com/zwgithub/blog_pic/master/block0_test.jpg)
-</code></pre><p>调用 <code>clang -rewrite-objc block0.c</code> 命令后会生成一个 block0.cpp ，打开这个文件，发现里面的代码居然有 500 多行，也是醉了。。。 抽出其中的主要的代码如下：</p>
-<pre><code>![block_cpp.jpg](https://raw.githubusercontent.com/zwgithub/blog_pic/master/bloc0_cpp.jpg)
-</code></pre><p>根据变换后的源码我们可以看出来，clang 会根据 Block 所属的函数名（此处为 main ）和该 Block 在函数中出现的顺序（此处为 0 ）来给函数命名。</p>
+<p><img src="https://raw.githubusercontent.com/zwgithub/blog_pic/master/block0_test.jpg" alt="block0_test.jpg"></p>
+<p>调用 <code>clang -rewrite-objc block0.c</code> 命令后会生成一个 block0.cpp ，打开这个文件，发现里面的代码居然有 500 多行，也是醉了。。。 抽出其中的主要的代码如下：</p>
+<p><img src="https://raw.githubusercontent.com/zwgithub/blog_pic/master/bloc0_cpp.jpg" alt="block_cpp.jpg"></p>
+<p>根据变换后的源码我们可以看出来，clang 会根据 Block 所属的函数名（此处为 main ）和该 Block 在函数中出现的顺序（此处为 0 ）来给函数命名。</p>
 <p>都有 <code>printf(&quot;Hello, World!&quot;);</code>    这句的对应关系如下：</p>
 <pre><code>static void __main_block_func_0(struct __main_block_impl_0 *__cself) {
     printf(&quot;Hello, World!&quot;);
@@ -422,29 +435,27 @@ void (*blk)(void) = &amp;__main_block_impl_0(参数1, 参数2);
 (*blk-&gt;impl.FuncPtr)(blk);
 </code></pre><p>通过分析可知，其实就是函数指针调用函数的过程。从这个过程中可以得出 Block 以自身作为参数进行了传递，<code>__main_block_func_0</code> 函数的参数 <code>__cself</code> 指向了 Block 自己。通过 __main_block_impl_0 结构体构造函数里的这行代码 <code>impl.isa = &amp;_NSConcreteStackBlock</code>,也证实了此处的 Block 是 <code>_NSConcreteStackBlock</code> “类” 的对象。 到此为止我们终于明白了 Block 的实质。</p>
 <p>3.2 Block 截获变量的原理<br>同上面的分析方法一样，先来看一下源代码：</p>
-<pre><code>![block1_test.jgp](https://raw.githubusercontent.com/zwgithub/blog_pic/master/block1_test.jpg)
-
-经 clang 转换后的源码如下：
-
-![block1_test.jgp](https://raw.githubusercontent.com/zwgithub/blog_pic/master/block1_cpp.jpg)
-</code></pre><p>同 3.1 转换后的源码比较，被 Block 捕获的 val 变量被添加到 <code>__main_block_impl_0</code> 的结构体中。通过这一点我们明白了在执行 Block 之前修改被它捕获的变量不起作用的原因。</p>
+<p><img src="https://raw.githubusercontent.com/zwgithub/blog_pic/master/block1_test.jpg" alt="block1_test.jgp"></p>
+<p>经 clang 转换后的源码如下：</p>
+<p><img src="https://raw.githubusercontent.com/zwgithub/blog_pic/master/block1_cpp.jpg" alt="block1_test.jgp"></p>
+<p>同 3.1 转换后的源码比较，被 Block 捕获的 val 变量被添加到 <code>__main_block_impl_0</code> 的结构体中。通过这一点我们明白了在执行 Block 之前修改被它捕获的变量不起作用的原因。</p>
 <p>3.3 Block 截获局部变量的出错的原因</p>
 <p>同上面一样，先来看源码：</p>
-<pre><code>![block2_test.jpg](https://raw.githubusercontent.com/zwgithub/blog_pic/master/block2_test.jpg)
-</code></pre><p>用 clang 编译时报错，提示信息如下：</p>
-<pre><code>![block2_error.jpg](https://raw.githubusercontent.com/zwgithub/blog_pic/master/block_error.jpg)
-</code></pre><p>经 clang 编译时候报错，提示我们变量是不能修改的，并提示缺少了 <code>__block</code> 修饰符。那它为什么不能被修改呢？此处的 var 变量为局部变量，在 OBJective-C 中我们经常把 Block 用来处理回调，执行 Block 的时候 var 可能已经被回收了。当超出 var 的作用域后，var 变量被回收，如果在 Block 里面修改 var 的话就崩溃了。这里不让在 Block 里面修改 var 的值是非常合理的。</p>
+<p><img src="https://raw.githubusercontent.com/zwgithub/blog_pic/master/block2_test.jpg" alt="block2_test.jpg"></p>
+<p>用 clang 编译时报错，提示信息如下：</p>
+<p><img src="https://raw.githubusercontent.com/zwgithub/blog_pic/master/block_error.jpg" alt="block2_error.jpg"></p>
+<p>经 clang 编译时候报错，提示我们变量是不能修改的，并提示缺少了 <code>__block</code> 修饰符。那它为什么不能被修改呢？此处的 var 变量为局部变量，在 OBJective-C 中我们经常把 Block 用来处理回调，执行 Block 的时候 var 可能已经被回收了。当超出 var 的作用域后，var 变量被回收，如果在 Block 里面修改 var 的话就崩溃了。这里不让在 Block 里面修改 var 的值是非常合理的。</p>
 <p>3.4 Block 截获静态变量的原理<br>同上面一样，先来看源码：</p>
-<pre><code>![block3_test.jpg](https://raw.githubusercontent.com/zwgithub/blog_pic/master/block3_test.jpg)
-</code></pre><p>经 clang 编译后的源码如下所示：</p>
-<pre><code>![block3_cpp.jpg](https://raw.githubusercontent.com/zwgithub/blog_pic/master/block3_cpp.jpg)
-</code></pre><p>在 <code>__main_block_impl_0</code> 结构体的构造函数中，是把 var 的地址传递过去的。在 <code>__main_block_func_0</code> 使用 var 时用的是 var 的地址。为什么静态变量能够在 Block 内修改呢？这是因为静态变量存储在数据区（data 区），它能保证无论什么时候执行 Block ，它都没被回收，所以能在 Block 内部修改。</p>
+<p><img src="https://raw.githubusercontent.com/zwgithub/blog_pic/master/block3_test.jpg" alt="block3_test.jpg"></p>
+<p>经 clang 编译后的源码如下所示：</p>
+<p><img src="https://raw.githubusercontent.com/zwgithub/blog_pic/master/block3_cpp.jpg" alt="block3_cpp.jpg"></p>
+<p>在 <code>__main_block_impl_0</code> 结构体的构造函数中，是把 var 的地址传递过去的。在 <code>__main_block_func_0</code> 使用 var 时用的是 var 的地址。为什么静态变量能够在 Block 内修改呢？这是因为静态变量存储在数据区（data 区），它能保证无论什么时候执行 Block ，它都没被回收，所以能在 Block 内部修改。</p>
 <p>3.5 Block 截获 <code>__block</code> 变量的原理</p>
 <p>再来看最后一种情况，还是先看源码：</p>
-<pre><code>![block4_test.jpg](https://raw.githubusercontent.com/zwgithub/blog_pic/master/block4_test.jpg)
-</code></pre><p>经 clang 编译后的源码如下所示：</p>
-<pre><code>![block4_test.jpg](https://raw.githubusercontent.com/zwgithub/blog_pic/master/block4_cpp.jpg)
-</code></pre><p>加上 <code>__block</code> 后代码量增大了。同 Block 捕获静态变量相比，多出了以下内容：</p>
+<p><img src="https://raw.githubusercontent.com/zwgithub/blog_pic/master/block4_test.jpg" alt="block4_test.jpg"></p>
+<p>经 clang 编译后的源码如下所示：</p>
+<p><img src="https://raw.githubusercontent.com/zwgithub/blog_pic/master/block4_cpp.jpg" alt="block4_test.jpg"></p>
+<p>加上 <code>__block</code> 后代码量增大了。同 Block 捕获静态变量相比，多出了以下内容：</p>
 <pre><code>* var 变量变成为了 `__Block_byref_val_0` 结构体类型的变量
 * __main_block_desc_0 结构体中多出了 copy 和 dispose 方法。
 * __main_block_impl_0 结构体中多出了 `__Block_byref_val_0` 结构体类型的指针
