@@ -1,0 +1,409 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  
+  <meta http-equiv="X-UA-Compatible" content="IE=edge" >
+  <title>利用 Jenkins 自动生成 ipa 包 | Zhenwei</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+  <meta name="description" content="背景
+项目进入测试阶段要不停的给测试的同学打包，我们就不得不停下手中的工作，Archive -&amp;gt; 导出 ipa 包 -&amp;gt; 发给测试的同学 -&amp;gt; 测试的同学通过 iTunes 装到手机上测试 -&amp;gt; 发现 bug，我们修改完后又需要重新打包，然后不停的重复上面的工作，你烦不烦？反正我是受够了。。。正是有了上面的痛点，才会去想能不能我们提交代码后让测试的同学自己打包，然后通过一个">
+<meta property="og:type" content="article">
+<meta property="og:title" content="利用 Jenkins 自动生成 ipa 包">
+<meta property="og:url" content="http://yoursite.com/2016/06/15/利用-Jenkins-自动生成-ipa-包/index.html">
+<meta property="og:site_name" content="Zhenwei">
+<meta property="og:description" content="背景
+项目进入测试阶段要不停的给测试的同学打包，我们就不得不停下手中的工作，Archive -&amp;gt; 导出 ipa 包 -&amp;gt; 发给测试的同学 -&amp;gt; 测试的同学通过 iTunes 装到手机上测试 -&amp;gt; 发现 bug，我们修改完后又需要重新打包，然后不停的重复上面的工作，你烦不烦？反正我是受够了。。。正是有了上面的痛点，才会去想能不能我们提交代码后让测试的同学自己打包，然后通过一个">
+<meta property="og:image" content="http://yoursite.com/https://">
+<meta property="og:image" content="http://yoursite.com/https://">
+<meta property="og:image" content="http://yoursite.com/https://">
+<meta property="og:image" content="http://yoursite.com/https://">
+<meta property="og:image" content="http://yoursite.com/https://">
+<meta property="og:image" content="http://yoursite.com/https://">
+<meta property="og:image" content="http://yoursite.com/https://">
+<meta property="og:image" content="http://yoursite.com/https://">
+<meta property="og:image" content="http://yoursite.com/https://">
+<meta property="og:image" content="http://yoursite.com/https://">
+<meta property="og:image" content="http://yoursite.com/https://">
+<meta property="og:image" content="http://yoursite.com/https://">
+<meta property="og:image" content="http://yoursite.com/https://">
+<meta property="og:image" content="http://yoursite.com/https://">
+<meta property="og:image" content="http://yoursite.com/https://">
+<meta property="og:image" content="http://yoursite.com/https://">
+<meta property="og:updated_time" content="2016-06-15T01:23:08.000Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="利用 Jenkins 自动生成 ipa 包">
+<meta name="twitter:description" content="背景
+项目进入测试阶段要不停的给测试的同学打包，我们就不得不停下手中的工作，Archive -&amp;gt; 导出 ipa 包 -&amp;gt; 发给测试的同学 -&amp;gt; 测试的同学通过 iTunes 装到手机上测试 -&amp;gt; 发现 bug，我们修改完后又需要重新打包，然后不停的重复上面的工作，你烦不烦？反正我是受够了。。。正是有了上面的痛点，才会去想能不能我们提交代码后让测试的同学自己打包，然后通过一个">
+<meta name="twitter:image" content="http://yoursite.com/https://">
+  
+    <link rel="alternative" href="/atom.xml" title="Zhenwei" type="application/atom+xml">
+  
+  
+    <link rel="icon" href="/favicon.png">
+  
+  <link rel="stylesheet" href="/css/style.css">
+</head>
+
+<body>
+  <div id="container">
+    <div class="left-col">
+    <div class="overlay"></div>
+<div class="intrude-less">
+	<header id="header" class="inner">
+		<a href="/" class="profilepic">
+			
+			<img lazy-src="https://raw.githubusercontent.com/zwgithub/blog_pic/master/shanwu.jpeg" class="js-avatar">
+			
+		</a>
+
+		<hgroup>
+		  <h1 class="header-author"><a href="/">Zhenwei Cao</a></h1>
+		</hgroup>
+
+		
+		<p class="header-subtitle">Where there is life there is struggle！</p>
+		
+
+		
+			<div class="switch-btn">
+				<div class="icon">
+					<div class="icon-ctn">
+						<div class="icon-wrap icon-house" data-idx="0">
+							<div class="birdhouse"></div>
+							<div class="birdhouse_holes"></div>
+						</div>
+						<div class="icon-wrap icon-ribbon hide" data-idx="1">
+							<div class="ribbon"></div>
+						</div>
+						
+						
+						<div class="icon-wrap icon-me hide" data-idx="3">
+							<div class="user"></div>
+							<div class="shoulder"></div>
+						</div>
+						
+					</div>
+					
+				</div>
+				<div class="tips-box hide">
+					<div class="tips-arrow"></div>
+					<ul class="tips-inner">
+						<li>菜单</li>
+						<li>标签</li>
+						
+						
+						<li>关于我</li>
+						
+					</ul>
+				</div>
+			</div>
+		
+
+		<div class="switch-area">
+			<div class="switch-wrap">
+				<section class="switch-part switch-part1">
+					<nav class="header-menu">
+						<ul>
+						
+							<li><a href="/">主页</a></li>
+				        
+							<li><a href="/archives">所有文章</a></li>
+				        
+						</ul>
+					</nav>
+					<nav class="header-nav">
+						<div class="social">
+							
+								<a class="github" target="_blank" href="#" title="github">github</a>
+					        
+								<a class="weibo" target="_blank" href="#" title="weibo">weibo</a>
+					        
+								<a class="rss" target="_blank" href="#" title="rss">rss</a>
+					        
+								<a class="zhihu" target="_blank" href="#" title="zhihu">zhihu</a>
+					        
+						</div>
+					</nav>
+				</section>
+				
+				
+				<section class="switch-part switch-part2">
+					<div class="widget tagcloud" id="js-tagcloud">
+						
+					</div>
+				</section>
+				
+				
+				
+
+				
+				
+				<section class="switch-part switch-part3">
+				
+					<div id="js-aboutme">我是谁，我从哪里来，我到哪里去？我就是我，是颜色不一样的吃货…</div>
+				</section>
+				
+			</div>
+		</div>
+	</header>				
+</div>
+
+    </div>
+    <div class="mid-col">
+      <nav id="mobile-nav">
+  	<div class="overlay">
+  		<div class="slider-trigger"></div>
+  		<h1 class="header-author js-mobile-header hide">Zhenwei Cao</h1>
+  	</div>
+	<div class="intrude-less">
+		<header id="header" class="inner">
+			<div class="profilepic">
+			
+				<img lazy-src="https://raw.githubusercontent.com/zwgithub/blog_pic/master/shanwu.jpeg" class="js-avatar">
+			
+			</div>
+			<hgroup>
+			  <h1 class="header-author">Zhenwei Cao</h1>
+			</hgroup>
+			
+			<p class="header-subtitle">Where there is life there is struggle！</p>
+			
+			<nav class="header-menu">
+				<ul>
+				
+					<li><a href="/">主页</a></li>
+		        
+					<li><a href="/archives">所有文章</a></li>
+		        
+		        <div class="clearfix"></div>
+				</ul>
+			</nav>
+			<nav class="header-nav">
+				<div class="social">
+					
+						<a class="github" target="_blank" href="#" title="github">github</a>
+			        
+						<a class="weibo" target="_blank" href="#" title="weibo">weibo</a>
+			        
+						<a class="rss" target="_blank" href="#" title="rss">rss</a>
+			        
+						<a class="zhihu" target="_blank" href="#" title="zhihu">zhihu</a>
+			        
+				</div>
+			</nav>
+		</header>				
+	</div>
+</nav>
+
+      <div class="body-wrap"><article id="[layout]-利用-Jenkins-自动生成-ipa-包" class="article article-type-[layout]" itemscope itemprop="blogPost">
+  
+    <div class="article-meta">
+      <a href="/2016/06/15/利用-Jenkins-自动生成-ipa-包/" class="article-date">
+  	<time datetime="2016-06-15T01:13:55.000Z" itemprop="datePublished">2016-06-15</time>
+</a>
+    </div>
+  
+  <div class="article-inner">
+    
+      <input type="hidden" class="isFancy" />
+    
+    
+      <header class="article-header">
+        
+  
+    <h1 class="article-title" itemprop="name">
+      利用 Jenkins 自动生成 ipa 包
+    </h1>
+  
+
+      </header>
+      
+      <div class="article-info article-info-post">
+        
+        
+
+        <div class="clearfix"></div>
+      </div>
+      
+    
+    <div class="article-entry" itemprop="articleBody">
+      
+        <p>背景</p>
+<p>项目进入测试阶段要不停的给测试的同学打包，我们就不得不停下手中的工作，Archive -&gt; 导出 ipa 包 -&gt; 发给测试的同学 -&gt; 测试的同学通过 iTunes 装到手机上测试 -&gt; 发现 bug，我们修改完后又需要重新打包，然后不停的重复上面的工作，你烦不烦？反正我是受够了。。。正是有了上面的痛点，才会去想能不能我们提交代码后让测试的同学自己打包，然后通过一个 url 直接安装到手机上？答案是必须的能，要不我也不用在这里逼逼逼了~~~，废话少说，开始。。。</p>
+<a id="more"></a>
+<p>我们可以用 Jenkins 来帮我们完成。首先介绍一下Jenkins，它是一个开源软件项目，是基于Java开发的，旨在提供一个开放易用的软件平台，用于监控持续重复的工作（比如上面的提到的打 ipa包），使持续集成变成可能。</p>
+<p>本来想把 Jenkins 搭在公司的内部服务器上，但是这样的话不能装 xcodebuild 命令（至少我现在不知道怎么做，知道的话麻烦告诉我），于是放弃了，把 Jenkins 装在 mac 上，打完 ipa 包后再通过 ftp 传到服务器上。部署好以后，把 Jenkins 的地址和能下载 ipa 包的地址发给测试的同学，他们就可以自己打包，并且能通过 url 很简单的把 ipa 包装到手机上。从此，我的世界就能清净了。</p>
+<p>1.使用 home-brew 安装 jdk<br>什么？没用过 home-brew，自己面壁去！！！</p>
+<pre><code>/usr/bin/ruby -e &quot;$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/master/install)&quot;
+</code></pre><p>Jenkins 是基于 Java 开发的，首先保证系统中已经安装了 jdk。<br>命令如下：</p>
+<pre><code>brew install Caskroom/cask/java
+</code></pre><p>2.使用 homebrew 安装 jenkins</p>
+<pre><code>brew install jenkins
+</code></pre><p>3.做软链接</p>
+<pre><code>ln -sfv /usr/local/opt/jenkins/*.plist ~/Library/LaunchAgents
+</code></pre><p>4.启动</p>
+<pre><code>launchctl load ~/Library/LaunchAgents/homebrew.mxcl.jenkins.plist
+</code></pre><p>然后就可以在浏览器里通过 <a href="http://localhost:8080" target="_blank" rel="external">http://localhost:8080</a> 来看到 Jenkins了。第一次安装会让输入密码，密码可以在这里查看</p>
+<pre><code>cat /var/lib/jenkins/secrets/initialAdminPassword
+</code></pre><p>，接着装好默认的插件后就可以使用了。界面如下：</p>
+<p><img src="https://" alt="jenkins1.jpg"></p>
+<p>现在来创建一个新任务：</p>
+<p><img src="https://" alt="jenkins1.jpg"></p>
+<p>这里以 svn 为例，git 当然也是可以的。配置源码 svn 如下所示</p>
+<p><img src="https://" alt="jenkins1.jpg"></p>
+<p>添加我们需要的插件</p>
+<p><img src="https://" alt="jenkins1.jpg"></p>
+<p>在可选插件里输入我们想要安装的插件，我们需要用的有：<br>1.Xcode Plugin     打 ipa 包要用到的<br>2.Publish Over FTP Plugin     上传 ftp 服务器要用到的</p>
+<p>构建触发器，这里配置的是每 15 分钟检测一下 svn 的版本号，有变化的话就开始打包</p>
+<p><img src="https://" alt="jenkins1.jpg"></p>
+<p>配置 xcode</p>
+<p><img src="https://" alt="jenkins1.jpg"></p>
+<p><img src="https://" alt="jenkins1.jpg"></p>
+<p><img src="https://" alt="jenkins1.jpg"></p>
+<p>可以添加打包完成后执行本地 shell</p>
+<p><img src="https://" alt="jenkins1.jpg"></p>
+<p>配置 ftp<br>现在系统设置里配置，然后再到 jenkins_test 里面去配置<br>系统配置如下：</p>
+<p><img src="https://" alt="jenkins1.jpg"></p>
+<p>点开高级以后别忘了设置里面的端口号</p>
+<p><img src="https://" alt="jenkins1.jpg"></p>
+<p>然后回到 jenkins_test 做相关的配置</p>
+<p><img src="https://" alt="jenkins1.jpg"></p>
+<p>点击立即构建后，从 Console Output 可以看出先更新svn，然后打包，打包后把 ipa 包传到服务器上，</p>
+<p><img src="https://" alt="jenkins1.jpg"></p>
+<p>至此可以用 Jenkins 来自动打包上传了，接下来要做的就是测试的同学通过一个 url 来直接安装 ipa 到手机上，具体的步骤如下：<br>1.准备 manifest.plist  文件</p>
+<p><img src="https://" alt="jenkins1.jpg"></p>
+<p>2.准备 html 文件，目的是让测试同学通过这个下载 ipa 包，本 demo 如下：</p>
+<p><img src="https://" alt="jenkins1.jpg"></p>
+<p>源码如下：</p>
+<p><img src="https://" alt="jenkins1.jpg"></p>
+<p>注意：在 iOS7.1 后这个 manifest.plist 的地址必须要为 https 的，要不不能正确的安装到手机上。没有用 https 的可以在这里免费申请一个：<br><a href="https://www.startssl.com" target="_blank" rel="external">https://www.startssl.com</a></p>
+
+      
+    </div>
+    
+  </div>
+  
+    
+<nav id="article-nav">
+  
+  
+    <a href="/2016/06/14/iOS-中-native-和-JavaScript-的交互原理以及-WebViewJavascript-源码分析/" id="article-nav-older" class="article-nav-link-wrap">
+      <div class="article-nav-title">iOS 中 native 和 JavaScript 的交互原理以及 WebViewJavascript 源码分析</div>
+      <strong class="article-nav-caption">></strong>
+    </a>
+  
+</nav>
+
+  
+</article>
+
+
+<div class="share_jia">
+	<!-- JiaThis Button BEGIN -->
+	<div class="jiathis_style">
+		<span class="jiathis_txt">分享到: &nbsp; </span>
+		<a class="jiathis_button_facebook"></a> 
+    <a class="jiathis_button_twitter"></a>
+    <a class="jiathis_button_plus"></a> 
+    <a class="jiathis_button_tsina"></a>
+		<a class="jiathis_button_cqq"></a>
+		<a class="jiathis_button_douban"></a>
+		<a class="jiathis_button_weixin"></a>
+		<a class="jiathis_button_tumblr"></a>
+    <a href="http://www.jiathis.com/share" class="jiathis jiathis_txt jtico jtico_jiathis" target="_blank"></a>
+	</div>
+	<script type="text/javascript" src="http://v3.jiathis.com/code/jia.js?uid=1405949716054953" charset="utf-8"></script>
+	<!-- JiaThis Button END -->
+</div>
+
+
+
+
+
+
+<div class="duoshuo">
+	<!-- 多说评论框 start -->
+	<div class="ds-thread" data-thread-key="利用-Jenkins-自动生成-ipa-包" data-title="利用 Jenkins 自动生成 ipa 包" data-url="http://yoursite.com/2016/06/15/利用-Jenkins-自动生成-ipa-包/"></div>
+	<!-- 多说评论框 end -->
+	<!-- 多说公共JS代码 start (一个网页只需插入一次) -->
+	<script type="text/javascript">
+	var duoshuoQuery = {short_name:"true"};
+	(function() {
+		var ds = document.createElement('script');
+		ds.type = 'text/javascript';ds.async = true;
+		ds.src = (document.location.protocol == 'https:' ? 'https:' : 'http:') + '//static.duoshuo.com/embed.js';
+		ds.charset = 'UTF-8';
+		(document.getElementsByTagName('head')[0] 
+		 || document.getElementsByTagName('body')[0]).appendChild(ds);
+	})();
+	</script>
+	<!-- 多说公共JS代码 end -->
+</div>
+
+
+
+
+</div>
+      <footer id="footer">
+  <div class="outer">
+    <div id="footer-info">
+    	<div class="footer-left">
+    		&copy; 2016 Zhenwei Cao
+    	</div>
+      	<div class="footer-right">
+      		<a href="http://hexo.io/" target="_blank">Hexo</a>  Theme <a href="https://github.com/litten/hexo-theme-yilia" target="_blank">Yilia</a> by Litten
+      	</div>
+    </div>
+  </div>
+</footer>
+    </div>
+    
+  <link rel="stylesheet" href="/fancybox/jquery.fancybox.css">
+
+
+<script>
+	var yiliaConfig = {
+		fancybox: true,
+		mathjax: true,
+		animate: true,
+		isHome: false,
+		isPost: true,
+		isArchive: false,
+		isTag: false,
+		isCategory: false,
+		open_in_new: true
+	}
+</script>
+<script src="http://7.url.cn/edu/jslib/comb/require-2.1.6,jquery-1.9.1.min.js"></script>
+<script src="/js/main.js"></script>
+
+
+
+
+
+
+<script type="text/x-mathjax-config">
+MathJax.Hub.Config({
+    tex2jax: {
+        inlineMath: [ ['$','$'], ["\\(","\\)"]  ],
+        processEscapes: true,
+        skipTags: ['script', 'noscript', 'style', 'textarea', 'pre', 'code']
+    }
+});
+
+MathJax.Hub.Queue(function() {
+    var all = MathJax.Hub.getAllJax(), i;
+    for(i=0; i < all.length; i += 1) {
+        all[i].SourceElement().parentNode.className += ' has-jax';                 
+    }       
+});
+</script>
+
+<script type="text/javascript" src="http://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML">
+</script>
+
+
+  </div>
+</body>
+</html>

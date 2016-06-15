@@ -14,7 +14,7 @@
 <meta property="og:site_name" content="Zhenwei">
 <meta property="og:description" content="前言
 在 iOS 开发中经常要用到 UIWebView ( iOS8 中可以用 WKWebView，本文章以 UIWebView 为例 ) 来展示一些东西，其中就难免要和网页进行交互。服务端提供 H5 供多个平台使用，我们就不用在 native 中开发了，是不是很棒。Hybrid App 的优势很明显，这就要求我们必须具备 native 和网页交互的技能。学点儿 JavaScript 的知识能帮我">
-<meta property="og:updated_time" content="2016-06-14T10:13:44.000Z">
+<meta property="og:updated_time" content="2016-06-15T02:01:17.000Z">
 <meta name="twitter:card" content="summary">
 <meta name="twitter:title" content="iOS 中 native 和 JavaScript 的交互原理以及 WebViewJavascript 源码分析">
 <meta name="twitter:description" content="前言
@@ -220,10 +220,10 @@
 <li><p>JavaScript 能直接调用 native 方法吗？不可以。</p>
 </li>
 <li><p>native 能直接调用 JavaScript 代码吗？可以，可以通过以下方式来调用：</p>
-<pre><code>[webView stringByEvaluatingJavaScriptFromString:javascriptCommand]；
-</code></pre></li>
+</li>
 </ul>
-<p>JavaScript 不能直接调用 native 的方法，但是可以间接的通过一些方法来实现。可以利用 UIWebView 的 <code>webView: shouldStartLoadWithRequest: navigationType:</code> 代理方法来做。 WKWebView 中可以通过 <code>webView: decidePolicyForNavigationAction: decisionHandler:</code> 代理方法来做（本文以 UIWebView 为例，WKWebView 与 JavaScript 交互的原理同 UIWebView 一样，后面不会赘述。以下用 webView 来代指 UIWebView 和 WKWebView ）。webView 发起的网络请求都会走上面的代理方法，那么就可以在代理里拦截，如果返回的是我们自己定义的 URL ，就不在加载网页，而是来处理一些我们想让它做的事情，从而实现 native 和 JavaScript 的交互。</p>
+<pre><code>[webView stringByEvaluatingJavaScriptFromString:javascriptCommand];    
+</code></pre><p>JavaScript 不能直接调用 native 的方法，但是可以间接的通过一些方法来实现。可以利用 UIWebView 的 <code>webView: shouldStartLoadWithRequest: navigationType:</code> 代理方法来做。 WKWebView 中可以通过 <code>webView: decidePolicyForNavigationAction: decisionHandler:</code> 代理方法来做（本文以 UIWebView 为例，WKWebView 与 JavaScript 交互的原理同 UIWebView 一样，后面不会赘述。以下用 webView 来代指 UIWebView 和 WKWebView ）。webView 发起的网络请求都会走上面的代理方法，那么就可以在代理里拦截，如果返回的是我们自己定义的 URL ，就不在加载网页，而是来处理一些我们想让它做的事情，从而实现 native 和 JavaScript 的交互。</p>
 <h3 id="2-WebViewJavascriptBridge-源码分析"><a href="#2-WebViewJavascriptBridge-源码分析" class="headerlink" title="2 WebViewJavascriptBridge 源码分析"></a>2 WebViewJavascriptBridge 源码分析</h3><p>WebViewJavascriptBridge 是封装好的 native 和 JavaScript 交互的组件。下面主要是对它源码的一些分析，以及一些简单的 JavaScript 知识（对只会 Objective-C 程序猿理解 WebViewJavascriptBridge 很有帮助哦）。上面分析的原理是利用 webView 的代理来拦截 URL 从而实现交互。那么 webView 的代理方法 <code>webView: shouldStartLoadWithRequest: navigationType</code> 什么时候会被调用呢？给出的回答是这样的： <code>Sent before a web view begins loading a frame</code> 。如果代理方法只调用一次的话，没办法对其中的 URL 拦截判断（这里指的是我们自定义的 URL），所以就必须想办法在 H5 里做处理来触发 webView 的代理事件。有很多办法能解决这个问题，比如以下两种：</p>
 <pre><code>1. 创建 iframe 标签
     WebViewJavascriptBridge 中就是用的这种方法。
@@ -438,6 +438,15 @@ var a = {a:1,b:2}；
   
     
 <nav id="article-nav">
+  
+    <a href="/2016/06/15/利用-Jenkins-自动生成-ipa-包/" id="article-nav-newer" class="article-nav-link-wrap">
+      <strong class="article-nav-caption"><</strong>
+      <div class="article-nav-title">
+        
+          利用 Jenkins 自动生成 ipa 包
+        
+      </div>
+    </a>
   
   
     <a href="/2016/06/14/Objective-C-中的-Blocks-原理探究/" id="article-nav-older" class="article-nav-link-wrap">
