@@ -6,16 +6,19 @@
   <meta http-equiv="X-UA-Compatible" content="IE=edge" >
   <title>算法基础 | Zhenwei</title>
   <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
-  <meta name="description">
+  <meta name="description" content="计算机是用来存储和处理数据的。自然界中物体不可能是独立的，必定和别的物体之间有联系。比如人离不开衣服一样（除非在家裸睡，那也得睡在床上啊），总之物体不可能独立存在。同样的，在计算机的世界里，数据之间也是存在某些联系的，我们把这种联系称为数据结构。数据结构有逻辑结构和物理结构。逻辑结构有：链表，树，图等。物理结构表示的是数据在内存中的存储结构，可以是连续的，比如数组。也可以是不连续的内存，比如链表结">
 <meta property="og:type" content="article">
 <meta property="og:title" content="算法基础">
 <meta property="og:url" content="http://yoursite.com/2016/10/09/算法基础/index.html">
 <meta property="og:site_name" content="Zhenwei">
-<meta property="og:description">
-<meta property="og:updated_time" content="2016-10-09T07:35:08.000Z">
+<meta property="og:description" content="计算机是用来存储和处理数据的。自然界中物体不可能是独立的，必定和别的物体之间有联系。比如人离不开衣服一样（除非在家裸睡，那也得睡在床上啊），总之物体不可能独立存在。同样的，在计算机的世界里，数据之间也是存在某些联系的，我们把这种联系称为数据结构。数据结构有逻辑结构和物理结构。逻辑结构有：链表，树，图等。物理结构表示的是数据在内存中的存储结构，可以是连续的，比如数组。也可以是不连续的内存，比如链表结">
+<meta property="og:image" content="https://raw.githubusercontent.com/zwgithub/blog_pic/master/CalculateFun/CalculateFun2.png">
+<meta property="og:image" content="https://raw.githubusercontent.com/zwgithub/blog_pic/master/CalculateFun/CalculateFun1.png">
+<meta property="og:updated_time" content="2016-10-10T14:32:13.000Z">
 <meta name="twitter:card" content="summary">
 <meta name="twitter:title" content="算法基础">
-<meta name="twitter:description">
+<meta name="twitter:description" content="计算机是用来存储和处理数据的。自然界中物体不可能是独立的，必定和别的物体之间有联系。比如人离不开衣服一样（除非在家裸睡，那也得睡在床上啊），总之物体不可能独立存在。同样的，在计算机的世界里，数据之间也是存在某些联系的，我们把这种联系称为数据结构。数据结构有逻辑结构和物理结构。逻辑结构有：链表，树，图等。物理结构表示的是数据在内存中的存储结构，可以是连续的，比如数组。也可以是不连续的内存，比如链表结">
+<meta name="twitter:image" content="https://raw.githubusercontent.com/zwgithub/blog_pic/master/CalculateFun/CalculateFun2.png">
   
     <link rel="alternative" href="/atom.xml" title="Zhenwei" type="application/atom+xml">
   
@@ -222,7 +225,105 @@
     
     <div class="article-entry" itemprop="articleBody">
       
-        
+        <p>计算机是用来存储和处理数据的。自然界中物体不可能是独立的，必定和别的物体之间有联系。比如人离不开衣服一样（除非在家裸睡，那也得睡在床上啊），总之物体不可能独立存在。同样的，在计算机的世界里，数据之间也是存在某些联系的，我们把这种联系称为数据结构。数据结构有逻辑结构和物理结构。逻辑结构有：链表，树，图等。物理结构表示的是数据在内存中的存储结构，可以是连续的，比如数组。也可以是不连续的内存，比如链表结构，可以用一个指针指向另一段内存的起始位置。在写 C 语言的时候，有很多数据类型，比如 int、 float、struct 等，为什么会有这么多数据类型呢？打个比方，现实世界中，有别墅，有胶囊公寓，这些都是用来住人的，家里人多的话住别墅，人少的话住胶囊公寓就行。房子就好比是计算机中的内存，有了数据结构后就能给数据分配合适的存储空间，这样不会浪费，效率会高点儿。</p>
+<a id="more"></a>
+<p>时间复杂度<br>我们怎么评估一个算法写的好坏呢？在不同平台上都运行一下代码，看看这个算法所需要的时间和占用内存的大小来评估算法的好坏，这显然是不科学的。于是就引入了时间复杂度和空间复杂度这两个概念。时间复杂度来评估算法的时间，空间复杂度来评估算法所需要占用的空间。在进行算法分析时，语句总的执行次数 T ( n )  是关于问题规模 n 的函数，记作：T ( n ) = O ( fn ( n ) ) 。这样用 O ( ) 来体现算法时间复杂度的表示方式，我们称之为大 O 记法。推导大 O 阶方法要记住下面这三条规则：1. 用常数 1 来代表运行时间中所有加法常数。2. 只保留最高阶项。3. 如果最高阶存在且不为 1 ，则去除与这个项相乘的常数。下面来举列子依次说明怎么求大 O 阶。</p>
+<h4 id="例-1-常数阶"><a href="#例-1-常数阶" class="headerlink" title="例 1 常数阶"></a>例 1 常数阶</h4><pre><code>int a = 1;  //执行一次
+a = a + 1;  //执行一次
+printf(&quot;%d&quot;,a); //执行一次
+</code></pre><p>上面的算法语句一共执行了 3 次，根据第一条规则：用常数 1 来代表运行时间中所有加法常数，那么它的时间复杂度为 O (1)，我们把这种时间复杂度称之为常数阶。</p>
+<h4 id="例2-线性阶"><a href="#例2-线性阶" class="headerlink" title="例2 线性阶"></a>例2 线性阶</h4><pre><code>int n = 100;    //执行一次
+for (int i = 0; i &lt; n; i++) {
+    printf(&quot;%d&quot;,i); //执行 n 次
+}
+</code></pre><p>上面的 for 循环里的 printf 被执行了 n 次，一共执行了 n ＋ 1 次，根据第二条规则：只保留最高阶项，那么它的时间复杂度为 O (n), 我们把这种时间复杂度称之为线性阶。</p>
+<h4 id="例3-平方阶"><a href="#例3-平方阶" class="headerlink" title="例3 平方阶"></a>例3 平方阶</h4><pre><code> for (int i = 0; i &lt; n; i++) {
+    for (int j = 0; j &lt; n; i++) {
+        printf(&quot;%d&quot;,i);
+    }
+}
+</code></pre><p>上面的 for 循环里的 printf 被执行了 n ^ 2 次，根据上面的规则，它的时间复杂度为 O ( n ^ 2) ， 我们把这种时间复杂度称之为平方阶。</p>
+<h4 id="例4"><a href="#例4" class="headerlink" title="例4"></a>例4</h4><pre><code> while (i &lt; n) {
+    i = i * 2;
+}
+</code></pre><p>上面的 while 里的语句被执行了 log2n 次，它的时间复杂度为 log2n。</p>
+<h4 id="总结：常用的时间复杂度所花费的时间从小到大依次是："><a href="#总结：常用的时间复杂度所花费的时间从小到大依次是：" class="headerlink" title="总结：常用的时间复杂度所花费的时间从小到大依次是："></a>总结：常用的时间复杂度所花费的时间从小到大依次是：</h4><p><img src="https://raw.githubusercontent.com/zwgithub/blog_pic/master/CalculateFun/CalculateFun2.png" alt="CalculateFun2.jpg"></p>
+<p>上面介绍了时间复杂度的推导方法。下面着重来学习下常用的排序方法，因为算法一直是编程的基础，而排序算法是学习算法的开始，排序也是数据处理的重要内容。排序的归类如下：</p>
+<p><img src="https://raw.githubusercontent.com/zwgithub/blog_pic/master/CalculateFun/CalculateFun1.png" alt="CalculateFun1.jpg"></p>
+<h3 id="冒泡排序"><a href="#冒泡排序" class="headerlink" title="冒泡排序"></a>冒泡排序</h3><p>基本思想：依次比较相邻的两个数，将小数放在前面，大数放在后面。</p>
+<p>实现代码如下：</p>
+<pre><code>//冒泡排序
+- (NSMutableArray *)bubbleSort:(NSMutableArray *)array {
+    NSInteger n = array.count;
+    for (NSInteger i = 0; i &lt; n; i++) {
+        //这里注意下，一定是 n - 1 -i,要不会数组越界
+        for (NSInteger j = 0; j &lt; n - 1 - i; j++) {
+            NSInteger a = [[array objectAtIndex:j] intValue];
+            NSInteger b = [[array objectAtIndex:j+1] intValue];
+            if (a &gt; b) {
+                [array replaceObjectAtIndex:j withObject:[NSString stringWithFormat:@&quot;%ld&quot;,b]];
+                [array replaceObjectAtIndex:j+1 withObject:[NSString stringWithFormat:@&quot;%ld&quot;,a]];
+            }
+        }
+    }
+    return array;
+}
+</code></pre><p>复杂度为：n^2。</p>
+<p>优化方法：</p>
+<h3 id="快速排序"><a href="#快速排序" class="headerlink" title="快速排序"></a>快速排序</h3><p>基本思想是：</p>
+<pre><code>1．先从数列中取出一个数作为基准数（一般选择第一个）。
+2．分区过程，将比这个数大的数全放到它的右边，小于或等于它的数全放到它的左边。
+3．再对左右区间重复第二步，直到各区间只有一个数。
+</code></pre><p>实现代码如下：</p>
+<pre><code>//快速排序
+-(NSMutableArray *)quickSortWithArray:(NSMutableArray *)array left:(NSInteger)left right:(NSInteger)right{
+    if (right &gt; left) {
+        NSInteger x = [[array objectAtIndex:left] integerValue];
+        NSInteger i = left;
+        NSInteger j = right;
+        while (i &lt; j) {
+            //从右向左找第一个小于x的数
+            while (i &lt; j &amp;&amp; [[array objectAtIndex:j] integerValue] &gt;= x) {
+                j--;
+            }
+            if (i &lt; j) {
+                [array replaceObjectAtIndex:i++ withObject:[array objectAtIndex:j]];
+            }
+
+            //从左向右找第一个大于等于x的数
+            while (i &lt; j &amp;&amp; [[array objectAtIndex:i] integerValue] &lt; x) {
+                i++;
+            }
+            if (i &lt; j) {
+                [array replaceObjectAtIndex:j-- withObject:[array objectAtIndex:i]];
+            }
+        }
+
+        [array replaceObjectAtIndex:i withObject:[NSString stringWithFormat:@&quot;%ld&quot;,x]];
+        [self quickSortWithArray:array left:left right:i-1];
+        [self quickSortWithArray:array left:i+1 right:right];
+    }
+    return array;
+}
+</code></pre><h3 id="直接插入排序"><a href="#直接插入排序" class="headerlink" title="直接插入排序"></a>直接插入排序</h3><p>基本思想：直接插入排序，顾名思义，把一个数插入一个已经排好序的数据序列里。我们通常把第一数认为是已经排好序的一个数据序列。</p>
+<p>实现代码如下：</p>
+<pre><code>//直接插入排序
+- (NSMutableArray *)insertSort:(NSMutableArray *)array {
+    //假定第一个是排好序的，所以 i 从 1 开始
+    for (NSInteger i = 1; i &lt; array.count; i++) {
+        NSInteger j = i;
+        NSInteger target = [[array objectAtIndex:i] integerValue];
+
+        while (j &gt; 0 &amp;&amp; target &lt; [[array objectAtIndex:j - 1] integerValue]) {
+            [array replaceObjectAtIndex:j withObject:[array objectAtIndex:j - 1]];
+            j--;
+        }
+        [array replaceObjectAtIndex:j withObject:[NSString stringWithFormat:@&quot;%ld&quot;,target]];
+    }
+    return array;
+}
+</code></pre><p>复杂度为：n^2。</p>
+
       
     </div>
     
