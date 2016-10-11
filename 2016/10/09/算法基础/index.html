@@ -14,7 +14,7 @@
 <meta property="og:description" content="计算机是用来存储和处理数据的。自然界中物体不可能是独立的，必定和别的物体之间有联系。比如人离不开衣服一样（除非在家裸睡，那也得睡在床上啊），总之物体不可能独立存在。同样的，在计算机的世界里，数据之间也是存在某些联系的，我们把这种联系称为数据结构。数据结构有逻辑结构和物理结构。逻辑结构有：链表，树，图等。物理结构表示的是数据在内存中的存储结构，可以是连续的，比如数组。也可以是不连续的内存，比如链表结">
 <meta property="og:image" content="https://raw.githubusercontent.com/zwgithub/blog_pic/master/CalculateFun/CalculateFun2.png">
 <meta property="og:image" content="https://raw.githubusercontent.com/zwgithub/blog_pic/master/CalculateFun/CalculateFun1.png">
-<meta property="og:updated_time" content="2016-10-10T14:32:13.000Z">
+<meta property="og:updated_time" content="2016-10-11T00:42:08.000Z">
 <meta name="twitter:card" content="summary">
 <meta name="twitter:title" content="算法基础">
 <meta name="twitter:description" content="计算机是用来存储和处理数据的。自然界中物体不可能是独立的，必定和别的物体之间有联系。比如人离不开衣服一样（除非在家裸睡，那也得睡在床上啊），总之物体不可能独立存在。同样的，在计算机的世界里，数据之间也是存在某些联系的，我们把这种联系称为数据结构。数据结构有逻辑结构和物理结构。逻辑结构有：链表，树，图等。物理结构表示的是数据在内存中的存储结构，可以是连续的，比如数组。也可以是不连续的内存，比如链表结">
@@ -320,6 +320,26 @@ for (int i = 0; i &lt; n; i++) {
         }
         [array replaceObjectAtIndex:j withObject:[NSString stringWithFormat:@&quot;%ld&quot;,target]];
     }
+    return array;
+}
+</code></pre><p>复杂度为：n^2。</p>
+<h3 id="希尔排序"><a href="#希尔排序" class="headerlink" title="希尔排序"></a>希尔排序</h3><p>基本思想：希尔排序(Shell Sort)是插入排序的一种。也称缩小增量排序，是直接插入排序算法的一种更高效的改进版本。希尔排序是非稳定排序算法。该方法因DL．Shell于1959年提出而得名。<br>希尔排序是把记录按下标的一定增量分组，对每组使用直接插入排序算法排序；随着增量逐渐减少，每组包含的关键词越来越多，当增量减至1时，整个文件恰被分成一组，算法便终止。</p>
+<p>实现代码如下：</p>
+<pre><code>//希尔排序
+- (NSMutableArray *)shellSort:(NSMutableArray *)array {
+    NSInteger gap = array.count / 2;
+    while (1 &lt;= gap) {
+        for (NSInteger i = gap; i &lt; array.count; i++) {
+            NSInteger j;
+            NSInteger tmp = [[array objectAtIndex:i] integerValue];
+            for (j = i - gap; j &gt;= 0 &amp;&amp; tmp &lt; [[array objectAtIndex:j] integerValue]; j -= gap) {
+                [array replaceObjectAtIndex:j + gap withObject:[array objectAtIndex:j]];
+            }
+            [array replaceObjectAtIndex:j + gap withObject:[NSString stringWithFormat:@&quot;%ld&quot;,tmp]];
+        }
+        gap = gap / 2;
+    }
+
     return array;
 }
 </code></pre><p>复杂度为：n^2。</p>
